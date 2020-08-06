@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        <meta charset="UTF-8">
+        <title>欢迎页面</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" href="./css/font.css">
+        <link rel="stylesheet" href="./css/xadmin.css">
+        <script src="./lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="./js/xadmin.js"></script>
+        <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <blockquote class="layui-elem-quote">
+                                系统更新日志
+                            </blockquote>
+                            <ul class="layui-timeline">
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年8月5日</h3>
+                                        个人信息 新增【个人设置】
+                                        <br>包含背景颜色的、是否开启tab刷新的选项。
+                                        <br>这两项设置存在浏览器cookie中
+                                        <br>加入Druid连接池监控中心
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="layui-timeline">
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年8月3日</h3>
+                                            新增个人信息功能，为登录用户提供个人信息管理，账户密码重置的功能。
+                                        <br>【系统管理】新增参数管理，管理系统中的核心配置参数。
+                                        <br> 新增模块【开发工具】 此模块为开发运维人员提供更加便捷的工具，提升效率。
+                                        <br>【开发工具】模块新增功能 —— 数据库控制台：该功能能够实现对数据库的数据查询，无法做其他操作。但是还是请谨慎授权！
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="layui-timeline">
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年7月30日</h3>
+                                        【日志监控】模块新增操作日志查询功能
+                                        <br>新增表system_log记录操作记录
+                                        <br>系统将记录用户的核心操作记录。
+                                        <br>修复BUG
+                                        <br>1.由于AOP动态代理导致class改变，启动扫描后无法定制bean。
+
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="layui-timeline">
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年7月29日</h3>
+                                        【日志监控】模块新增日志查询功能
+                                        <br>方便管理员查询系统日志
+                                    </div>
+                                </li>
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年7月19日</h3>
+                                        <p>
+                                            系统角色权限用户功能完善
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="layui-timeline-item">
+                                    <i class="layui-icon layui-timeline-axis"></i>
+                                    <div class="layui-timeline-content layui-text">
+                                        <h3 class="layui-timeline-title">2020年7月13日</h3>
+                                        <div class="layui-timeline-title">开启项目，整合框架</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <style id="welcome_style"></style>
+                <div class="layui-col-md12">
+                    <blockquote class="layui-elem-quote layui-quote-nm">感谢layui,百度Echarts,jquery,本系统前端由x-admin提供技术支持。</blockquote></div>
+            </div>
+        </div>
+    </body>
+</html>

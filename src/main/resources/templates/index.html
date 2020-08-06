@@ -1,0 +1,435 @@
+<!doctype html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" lang="">
+    <head>
+        <meta charset="UTF-8">
+        <title>后台登录-X-admin2.2</title>
+        <meta name="renderer" content="webkit|ie-comp|ie-stand">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+
+        <link rel="stylesheet" th:href="@{'css/font.css'}">
+        <link rel="stylesheet" th:href="@{'css/xadmin.css'}">
+        <script type="text/javascript" th:src="@{'js/jquery.min.js'}"></script>
+        <script type="text/javascript" th:src="@{'lib/layui/layui.js'}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{'js/xadmin.js'}"></script>
+        <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script>
+            /**
+             * [封装方法]
+             */
+            /**
+             * [setCookie 设置cookie]
+             * [key value t 键 值 时间(秒)]
+             */
+            function setCookie(key,value,t){
+                var oDate=new Date();
+                oDate.setDate(oDate.getDate()+t);
+                document.cookie=key+"="+value+"; expires="+oDate.toDateString();
+            }
+            /**
+             * [getCookie 获取cookie]
+             */
+            function getCookie(key){
+                var arr1=document.cookie.split("; ");//由于cookie是通过一个分号+空格的形式串联起来的，所以这里需要先按分号空格截断,变成[name=Jack,pwd=123456,age=22]数组类型；
+                for(var i=0;i<arr1.length;i++){
+                    var arr2=arr1[i].split("=");//通过=截断，把name=Jack截断成[name,Jack]数组；
+                    if(arr2[0]==key){
+                        return decodeURI(arr2[1]);
+                    }
+                }
+            }
+            // 是否开启刷新记忆tab功能
+            var is_remember;
+            console.log(getCookie("is_remember"))
+            if (getCookie("is_remember")== 'false'){
+                is_remember = false;
+            }
+            var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+            //构建菜单
+            function buildMenu(data) {
+                var ul = "";
+                for (var i = 0; i < data.length; i++) {
+                    var li = " <li> <a href=\"javascript:;\"><i class=\"layui-icon  "+data[i].icon+"\"></i>" +
+                        "<cite>" + data[i].title + "</cite> <i class=\"iconfont nav_right\">&#xe697;</i></a>";
+                    li += buildMenuNode(data[i].children);
+                    ul += li + "</li>";
+                }
+                $("#nav").html(ul)
+            }
+
+            function buildMenuNode(data) {
+                var li = "<ul class=\"sub-menu\">";
+                for (var i = 0; i < data.length; i++) {
+                    //是否有子节点
+                    if (data[i].children.length > 0) {
+                        li += "<li><a href=\"javascript:;\"><i class=\"layui-icon "+data[i].icon+"\"></i>" +
+                            "<cite>" + data[i].title + "</cite><i class=\"iconfont nav_right\">&#xe697;</i></a>";
+                        li += buildMenuNode(data[i].children);
+                    } else {
+                        li += "<li><a onclick=\"xadmin.add_tab('" + data[i].title + "','" + localUrl+data[i].href + "')\">" +
+                            "<i class=\"layui-icon "+data[i].icon+"\"></i><cite>" + data[i].title + "</cite></a></li>";
+                    }
+                }
+                li +="</ul></li>";
+                return li;
+            }
+
+
+            layui.use('layer', function(){
+                var layer = layui.layer;
+            $(function () {
+                $.get(localUrl + "/menu", function (result) {
+                    buildMenu(result);
+                })
+
+                //设置背景颜色
+                var color = getCookie("color");
+                $('.container').css('background-color', color);
+                $('.left-nav').css('background-color', color);
+
+                if (getCookie("is_remember")== 'false'){
+                    $("#tab").append('<input type="checkbox"  name="tab" lay-skin="switch" lay-filter="switchTest" title="开关" lay-text="开启|关闭">');
+                }else{
+                    $("#tab").append('<input type="checkbox" checked name="tab" lay-skin="switch" lay-filter="switchTest" title="开关" lay-text="开启|关闭">');
+                }
+            })
+            });
+
+        </script>
+    </head>
+    <body class="index">
+        <!-- 顶部开始 -->
+        <div id="container" class="container">
+            <div class="logo">
+                <a >X-admin v2.2</a></div>
+            <div class="left_open">
+                <a><i title="展开左侧栏" class="iconfont">&#xe699;</i></a>
+            </div>
+            <ul class="layui-nav right" lay-filter="">
+                <li class="layui-nav-item to-index">
+                <li class="layui-nav-item">
+                    <a href="javascript:" th:text="${userInfo.userName}"></a>
+                    <dl class="layui-nav-child">
+                        <!-- 二级菜单 -->
+                        <dd>
+                            <a onclick="page()">个人信息</a></dd>
+                        <dd>
+                            <a href="exit">退出</a></dd>
+                    </dl>
+                </li>
+
+            </ul>
+        </div>
+        <!-- 顶部结束 -->
+        <!-- 中部开始 -->
+        <!-- 左侧菜单开始 -->
+        <div class="left-nav">
+            <div id="side-nav">
+                <ul id="nav">
+                </ul>
+            </div>
+        </div>
+        <!-- <div class="x-slide_left"></div> -->
+        <!-- 左侧菜单结束 -->
+        <!-- 右侧主体开始 -->
+        <div class="page-content">
+            <div class="layui-tab tab" lay-filter="xbs_tab" lay-allowclose="false">
+                <ul class="layui-tab-title">
+                    <li class="home">
+                        <i class="layui-icon">&#xe68e;</i>我的桌面</li></ul>
+                <div class="layui-unselect layui-form-select layui-form-selected" id="tab_right">
+                    <dl>
+                        <dd data-type="this">关闭当前</dd>
+                        <dd data-type="other">关闭其它</dd>
+                        <dd data-type="all">关闭全部</dd></dl>
+                </div>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <iframe src='welcome' frameborder="0" scrolling="yes" class="x-iframe"></iframe>
+                    </div>
+                </div>
+                <div id="tab_show"></div>
+            </div>
+        </div>
+        <div class="page-content-bg"></div>
+        <style id="theme_style"></style>
+        <!-- 右侧主体结束 -->
+        <!-- 中部结束 -->
+
+
+
+        <!--    个人信息  -->
+        <div class="layui-fluid" id="userInfo" style="display: none">
+            <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">个人信息</li>
+                    <li>修改密码</li>
+                    <li>个人设置</li>
+                </ul>
+                <div class="layui-tab-content" style="height: 100px;">
+                    <br>
+                    <div class="layui-tab-item layui-show">
+
+                        <div class="layui-row">
+                            <form action="" method="post" class="layui-form layui-form-pane" lay-filter="updateFrom">
+                                <div class="layui-form-item">
+                                    <label for="username" class="layui-form-label">
+                                        登录名
+                                    </label>
+                                    <input name="userId" style="display: none" th:value="${userInfo.userId}">
+                                    <div class="layui-input-inline">
+                                        <input type="text" id="username" name="userName" required="" lay-verify="required"
+                                               readonly="readonly"  autocomplete="off" class="layui-input" th:value="${userInfo.userName}">
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux">
+                                        不可修改
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">
+                                        真实姓名
+                                    </label>
+                                    <div class="layui-input-inline">
+                                        <input type="text"  name="realName"
+                                               autocomplete="off" class="layui-input"  th:value="${userInfo.realName}">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label  class="layui-form-label">
+                                        手机
+                                    </label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" id="phone" lay-verify="phone" name="phone" required=""
+                                               autocomplete="off" class="layui-input" th:value="${userInfo.phone}">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label  class="layui-form-label">
+                                        邮箱
+                                    </label>
+                                    <div class="layui-input-inline">
+                                        <input type="text"  lay-verify="email" name="email" required=""
+                                               autocomplete="off" class="layui-input"  th:value="${userInfo.email}">
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item">
+                                    <button class="layui-btn" lay-submit="" lay-filter="updateUser">提交</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div class="layui-tab-item layui-show">
+                            <div class="layui-row">
+                                <form action="" method="post" class="layui-form layui-form-pane" lay-filter="updateFrom">
+                                    <div class="layui-form-item">
+                                        <label for="username" class="layui-form-label">
+                                            原密码
+                                        </label>
+                                        <input name="userId" style="display: none" th:value="${userInfo.userId}">
+                                        <div class="layui-input-inline">
+                                            <input type="password" id="oldPass" name="oldPass" required="" lay-verify="oldPass"
+                                                   autocomplete="off" class="layui-input">
+                                        </div>
+                                        <div class="layui-form-mid layui-word-aux">
+                                            6-16个字符
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item">
+                                        <label for="username" class="layui-form-label">
+                                            新密码
+                                        </label>
+                                        <input name="userId" style="display: none" th:value="${userInfo.userId}">
+                                        <div class="layui-input-inline">
+                                            <input type="password" id="newPass" name="newPass" required="" lay-verify="newPass"
+                                                   autocomplete="off" class="layui-input">
+                                        </div>
+                                        <div class="layui-form-mid layui-word-aux">
+                                            6-16个字符
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item">
+                                        <label for="username" class="layui-form-label">
+                                            确认原密码
+                                        </label>
+                                        <input name="userId" style="display: none" th:value="${userInfo.userId}">
+                                        <div class="layui-input-inline">
+                                            <input type="password" id="restPass"  required="" lay-verify="restPass"
+                                                   autocomplete="off" class="layui-input">
+                                        </div>
+                                        <div class="layui-form-mid layui-word-aux">
+                                            6-16个字符
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item">
+                                        <button class="layui-btn" lay-submit="" lay-filter="updatePass">提交</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="layui-tab-item">
+                        <div class="layui-tab-item layui-show">
+                            <div class="layui-row">
+                                <form action="" method="post" class="layui-form layui-form-pane" lay-filter="updateFrom">
+
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">背景颜色</label>
+                                        <div class="layui-input-inline">
+                                            <div style="margin-left: 50px;">
+                                                <input type="hidden" name="color" value="" id="test-all-input">
+                                                <div id="test-all"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item" pane="">
+                                        <label class="layui-form-label">刷新记忆Tab</label>
+                                        <div class="layui-input-inline" id="tab">
+
+                                        </div>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+
+    </body>
+
+
+<script>
+    var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+    layui.use('colorpicker', function(){
+        var $ = layui.$
+            ,colorpicker = layui.colorpicker;
+
+        //开启全功能
+        colorpicker.render({
+            elem: '#test-all'
+            ,color: 'rgba(7, 155, 140, 1)'
+            ,format: 'rgb'
+            ,predefine: true
+            ,alpha: true
+            ,done: function(color){
+                setCookie("color",color);
+                $('#test-all-input').val(color); //向隐藏域赋值
+                 // layer.tips('提交后下次登录将自动改变主题颜色', this.elem);
+                color || this.change(color); //清空时执行 change
+            }
+            ,change: function(color){
+                //给当前页面头部和左侧设置主题色
+                $('.container').css('background-color', color);
+                $('.left-nav').css('background-color', color);
+            }
+        });
+        });
+
+
+
+    function page(){
+        layui.use(['table', 'form'], function () {
+            var table = layui.table;
+            var form = layui.form;
+
+            var w=($(window).width()*0.4);
+            var h=($(window).height() - 280);
+            layer.open({
+                type: 1,
+                area: [w+'px', h +'px'],
+                fix: false, //不固定
+                maxmin: true,
+                shadeClose: true,
+                shade:0.4,
+                title: "个人信息",
+                content: $("#userInfo"),
+                success: function () {
+
+                }
+            });
+
+            form.on('switch(switchTest)', function(data){
+                // console.log(data.elem.checked); //开关是否开启，true或者false
+                setCookie("is_remember",data.elem.checked);
+            });
+
+
+            //自定义验证规则
+            form.verify({
+                oldPass:[/(.+){6,12}$/, '密码必须6到12位'],
+                newPass:[/(.+){6,12}$/, '密码必须6到12位'],
+                restPass: function(value) {
+                    if ($('#restPass').val() != $('#newPass').val()) {
+                        return '两次密码不一致';
+                    }
+                }
+            });
+
+            //监听提交
+            form.on('submit(updateUser)',function(data) {
+                $.ajax({
+                    url : localUrl + "/user/updateUserInfo",
+                    type : "post",
+                    data: data.field,
+                    success : function(res) {
+                        if (res.status) {
+                            layer.alert(res.message, {
+                                    icon: 1
+                                });
+                        }else{
+                            layer.alert(res.message, {icon: 2});
+                        }
+                    },
+                    error : function() {
+                        layer.tips("服务器内部错误！");
+                    }
+                });
+                return false;
+            });
+
+
+        //监听修改密码提交
+        form.on('submit(updatePass)',function(data) {
+            $.ajax({
+                url : localUrl + "/user/updatePassWord",
+                type : "post",
+                data: data.field,
+                success : function(res) {
+                    if (res.status) {
+                        layer.alert(res.message, {
+                            icon: 1
+                        },function () {
+                            window.location.href=localUrl + "/exit";
+                        });
+                    }else{
+                        layer.alert(res.message, {icon: 2});
+                    }
+                },
+                error : function() {
+                    layer.tips("服务器内部错误！");
+                }
+            });
+            return false;
+        });
+
+    });
+    }
+
+</script>
+</html>

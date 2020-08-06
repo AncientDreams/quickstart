@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>系统日志</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" th:href="@{'/css/font.css'}">
+    <link rel="stylesheet" th:href="@{'/css/xadmin.css'}">
+
+    <script charset="utf-8" th:src="@{'/lib/layui/layui.js'}"></script>
+    <script type="text/javascript" th:src="@{'/js/jquery.min.js'}"></script>
+    <script type="text/javascript" th:src="@{'/js/xadmin.js'}"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<div class="x-nav">
+          <span class="layui-breadcrumb">
+            <a href="">系统管理</a>
+            <a>
+              <cite>系统日志</cite></a>
+          </span>
+    <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+        <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i></a>
+</div>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <form class="layui-form layui-form-pane kvadmin-search-form">
+
+                        <div class="layui-inline layui-show-xs-block">
+                            <label class="layui-form-label"><span style="color: red">*</span>日志日期</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="date" class="layui-input" id="test1" placeholder="请选择日期"
+                                       readonly="readonly" lay-verify="required">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline layui-show-xs-block">
+                            <label class="layui-form-label"><span style="color: red">*</span>日志时段</label>
+                            <div class="layui-input-inline">
+                                <select name="time" id="time" >
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i
+                                    class="layui-icon">&#xe615;</i>搜索
+                            </button>
+
+                            <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">
+                                <i class="layui-icon">&#xe640;</i>
+                                重置</button>
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" onclick="clearInput()">
+                                <i class="layui-icon">&#xe640;</i>
+                                清空日志</button>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="layui-card-body ">
+                    <table class="layui-table layui-form" id="dataTable" lay-filter="dataTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<fieldset class="layui-elem-field layui-field-title">
+    <legend>日志（请先选择日期，再选择时段）</legend>
+</fieldset>
+<!-- 显示区 -->
+<div id="loggingText" contenteditable="true"
+     style="width:100%;height:100%;background-color: ghostwhite; overflow: auto;"></div>
+</body>
+
+<script>
+    var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+    function clearInput(){
+        $('#loggingText').html("");
+    }
+
+ $(function () {
+
+     layui.use(['laydate','form'], function() {
+         var laydate = layui.laydate;
+         var form = layui.form;
+         //常规用法
+         laydate.render({
+             elem: '#test1'
+             ,done: function(value){
+                 $("#time").empty();
+                 $.post(localUrl + "/log/list",{date:value}, function (res) {
+                     $('#time').append(new Option("", "请选择"));
+                     $.each(res.list, function (index, item) {
+                         $('#time').append(new Option(item, item));// 下拉菜单里添加元素
+                     });
+                     layui.form.render("select");
+                 });
+             }
+         });
+         //监听搜索
+         form.on('submit(sreach)',function(data) {
+             $('#loggingText').html("");
+             if ($("#time").val() == "请选择"){
+                 layer.msg('请选择时段', {icon: 5});
+                 return false;
+             }
+             var indexs = layer.load(2);
+             $.post(localUrl + "/log/queryLog",data.field, function (res) {
+                 $.each(res.list, function (index, item) {
+                     $('#loggingText').append(item);
+                     layer.close(indexs);
+                 });
+             });
+             return false;
+         });
+     });
+
+ })
+
+</script>
+</html>

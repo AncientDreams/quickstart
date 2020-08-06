@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.quickstart.mapper.SystemUserMapper">
+
+
+    <resultMap id="queryUserRoleMap" type="com.example.quickstart.vo.SystemUserAndRoleVo">
+        <id column="uid" property="userId" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <result column="uname" property="userName" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="realname" property="realName" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="email" property="email" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="status" property="status" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <collection property="roleList" ofType="com.example.quickstart.entity.SystemRole">
+            <id column="role_no" property="roleNo" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+            <result column="role_name" property="roleName" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryUserRole" resultMap="queryUserRoleMap">
+        select
+users.user_id uid,users.user_name uname,users.real_name realname,users.email email,users.phone phone,users.status status
+,role.role_name role_name,role.role_no role_no
+from system_user users LEFT JOIN system_user_role userRole on  users.user_id = userRole.user_id
+LEFT JOIN system_role role on userRole.role_id = role.role_no where users.user_id = #{userId}
+    </select>
+</mapper>

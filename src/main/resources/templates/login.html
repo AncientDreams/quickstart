@@ -1,0 +1,110 @@
+<!doctype html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>后台登录</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+
+    <link rel="stylesheet" th:href="@{'css/font.css'}">
+    <link rel="stylesheet" th:href="@{'css/login.css'}">
+    <link rel="stylesheet" th:href="@{'css/xadmin.css'}">
+    <link rel="stylesheet" th:href="@{'lib/layui/css/layui.css'}">
+
+    <script type="text/javascript" th:src="@{'js/jquery.min.js'}"></script>
+    <script type="text/javascript" th:src="@{'js/jsencrypt.min.js'}"></script>
+    <script type="text/javascript" th:src="@{'lib/layui/layui.js'}" charset="utf-8"></script>
+
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="login-bg">
+<input id="publicKey" style="display: none" th:value="${publicKey}">
+<input id="message" style="display: none" th:value="${message}">
+<div class="login layui-anim layui-anim-up">
+    <div class="message">x-admin2.0-管理登录</div>
+    <div id="darkbannerwrap"></div>
+
+    <form id="loginForm" method="post" class="layui-form">
+        <input id="username"  name="username" placeholder="用户名" type="text" lay-verify="required" class="layui-input" value="admin">
+        <hr class="hr15">
+        <input id="password" name="password" lay-verify="required" placeholder="密码" type="password" class="layui-input"  value="123456">
+        <hr class="hr15">
+        <div id="slider"></div>
+        <hr class="hr15"><hr class="hr15">
+        <input value="登录" lay-submit lay-filter="login" style="width:100%;" type="button">
+        <hr class="hr20">
+    </form>
+</div>
+
+<script>
+    var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+    layui.extend({
+        sliderVerify : localUrl+'/lib/layui/sliderVerify/sliderVerify'
+    });
+
+    /**
+     * RSA加密
+     *
+     * @param value 加密文本
+     * @returns {PromiseLike<ArrayBuffer> | null | string | * | undefined}
+     */
+    function encryptPublic(value) {
+        // 使用公钥加密，default_key_size可为512，1024，2048等
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey($("#publicKey").val());
+        return encrypt.encrypt(value);
+    }
+
+    $(function () {
+        layui.use(['form','sliderVerify'], function () {
+            var form = layui.form;
+            var sliderVerify = layui.sliderVerify;
+            //绑定滑块
+            var slider = sliderVerify.render({
+                elem: '#slider'
+            });
+
+            //验证会话消息
+            var message = $("#message").val();
+            if (message != null && message != "") {
+                layer.msg(message);
+            }
+
+            //监听提交
+            form.on('submit(login)', function () {
+                if(!slider.isOk()){//用于表单验证是否已经滑动成功
+                    layer.msg("请先通过滑块验证");
+                    return false;
+                }
+                var indexs = layer.load(2);
+                $.post(localUrl + "/user/login", {
+                    username: encryptPublic($("#username").val()),
+                    password: encryptPublic($("#password").val())
+                }, function (result) {
+                    layer.close(indexs);
+                    if (result.status) {
+                        window.location.href = localUrl + "/index";
+                    } else {
+                        layer.msg(result.message);
+                    }
+                })
+            });
+        });
+
+        $(document).keyup(function (event) {
+            if (event.keyCode === 13) {
+                $('#loginForm input[type="button"]').trigger("click");
+            }
+        });
+    })
+
+</script>
+<!-- 底部结束 -->
+</body>
+</html>

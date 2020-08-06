@@ -1,0 +1,66 @@
+
+##### 开发环境配置文件 #####
+
+
+
+##### spring boot 内置tomcat端口 #####
+server:
+  port: 8081
+  #配置项目 访问的名称， 因为 spring boot 项目默认是不带项目名称的。
+  servlet:
+    context-path: /quickstart
+    session:
+      #会话过期时间，单位：秒，真实过期时间是60秒的倍数
+      timeout: 1800
+  tomcat:
+    uri-encoding: UTF-8
+    # 最大并发数
+    max-connections: 1000
+    # 当所有的请求处理线程都在使用时，所能接收的连接请求的队列的最大长度。默认100
+    accept-count: 400
+    # 线程池大小
+    threads:
+      max: 500
+  #Tomcat的header缓冲区大小
+  max-http-header-size: 64KB
+
+
+
+#####  Druid 连接池配置 #####
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      #JDBC四要素
+      url:
+      #用户名
+      username:
+      #加密后的密码
+      password:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+      #数据源配置
+      #初始化连接数
+      initial-size: 5
+      #最大连接数量
+      max-active: 50
+      #获取连接时最大等待时间
+      max-wait: 10000
+      #最小连接数量
+      min-idle: 3
+      #配置间隔多久才进行一次检测，检测需要关闭的空闲连接
+      time-between-eviction-runs-millis: 60000
+      #用来检测连接是否有效的SQL，解决数据库断开连接的问题
+      validation-query: select 1
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis: 30000
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: stat,wall,slf4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000

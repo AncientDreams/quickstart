@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" lang="">
+    <head>
+        <meta charset="UTF-8">
+        <title>权限管理</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{'/css/font.css'}">
+        <link rel="stylesheet" th:href="@{'/css/xadmin.css'}">
+
+        <script charset="utf-8" th:src="@{'/lib/layui/layui.js'}"></script>
+        <script type="text/javascript" th:src="@{'/js/jquery.min.js'}"></script>
+        <script type="text/javascript" th:src="@{'/js/xadmin.js'}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+    <!-- 表格操作设置-->
+    <script type="text/html" id="bar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="deleteUser">删除</a>
+    </script>
+
+
+    <!--        表格头部工具栏-->
+    <script type="text/html" id="toolbar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="addPermission"><i class="layui-icon"></i>添加权限</button>
+        </div>
+    </script>
+
+
+<!--    添加权限弹窗-->
+    <div class="layui-fluid" id="addPermission" style="display: none">
+        <div class="layui-row">
+            <form class="layui-form" lay-filter="addFrom">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>权限名称
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="permissionName" name="permissionName" required="" lay-verify="required"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        权限地址
+                    </label>
+                    <div class="layui-input-inline">
+                        <select id="addUrl" name="url" lay-filter="aihao">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        URL会自动扫描
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red"></span>是否显示
+                    </label>
+                    <div class="layui-input-inline" id="addCheckbox" >
+<!--                        <input type="checkbox"  name="exhibition" lay-skin="switch" lay-text="显示|不显示">-->
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        在左边的菜单栏中是否显示
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">权限图标</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="icon" id="IconPicker" lay-filter="IconPicker" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                       父节点
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="parentno" id="treeSelect" lay-filter="treeSelect" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                    </label>
+                    <button  class="layui-btn layui-btn-lg" lay-filter="add" lay-submit="">
+                        添加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+    <!--    编辑权限弹窗-->
+    <div class="layui-fluid" id="updatePermission" style="display: none">
+        <div class="layui-row">
+            <form class="layui-form" lay-filter="updateFrom">
+
+                <input type="text" id="permissionId" name="permissionId" style="display: none">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>权限名称
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="permissionName" required="" lay-verify="required"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        权限地址
+                    </label>
+                    <div class="layui-input-inline">
+                        <select id="updateUrl" name="url" lay-filter="aihao">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        URL会自动扫描
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red"></span>是否显示
+                    </label>
+                    <div class="layui-input-inline" id="updateCheckbox">
+<!--                        <input type="checkbox" checked="" name="open" lay-skin="switch" lay-filter="switchTest" title="开关">-->
+<!--                        <input type="checkbox"  name="exhibition" lay-skin="switch" lay-filter="switchTest" lay-text="显示|不显示">-->
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        在左边的菜单栏中是否显示
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">权限图标</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="icon" id="updateIconPicker" lay-filter="updateIconPicker" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        父节点
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="parentno" id="updateTreeSelect" lay-filter="updateTreeSelect" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                    </label>
+                    <button  class="layui-btn layui-btn-lg" lay-filter="update" lay-submit="">
+                        编辑
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="x-nav">
+          <span class="layui-breadcrumb">
+            <a href="">系统管理</a>
+            <a>
+              <cite>权限管理</cite></a>
+          </span>
+          <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+            <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i></a>
+        </div>
+
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body">
+                            <form class="layui-form layui-form-pane kvadmin-search-form">
+
+                                <div class="layui-inline layui-show-xs-block">
+                                    <label class="layui-form-label">权限名称</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" name="permissionName" placeholder="请输入权限名称" autocomplete="off"
+                                               class="layui-input">
+                                      </div>
+                                </div>
+
+                                <div class="layui-inline layui-show-xs-block">
+                                    <label class="layui-form-label">父节点</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" name="parentno" id="treeSelectSreach" lay-filter="treeSelectSreach" class="layui-input">
+                                    </div>
+                                </div>
+
+                                <div class="layui-inline layui-show-xs-block">
+                                    <button class="layui-btn" lay-submit="" lay-filter="sreach"><i
+                                            class="layui-icon">&#xe615;</i>搜索
+                                    </button>
+                                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">
+                                        <i class="layui-icon">&#xe640;</i>
+                                        重置</button>
+                                </div>
+
+                            </form>
+                        </div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table layui-form" id="dataTable" lay-filter="dataTable"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </body>
+    <script>
+       var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+       layui.extend({
+           iconPicker : localUrl+'/lib/layui/iconPicker/iconPicker',
+           treeSelect : localUrl+'/lib/layui/treeSelect/treeSelect'
+       });
+      layui.use(['laydate','form','table','iconPicker','treeSelect'], function(){
+        var laydate = layui.laydate;
+        var form = layui.form;
+          var table = layui.table;
+          //layui第三方开源组件
+          var iconPicker = layui.iconPicker;
+          var treeSelect = layui.treeSelect;
+
+          table.render({
+              elem: '#dataTable'
+              , url: localUrl + '/permission/listPage'
+              , title: '权限信息表'
+              ,toolbar: '#toolbar'
+              , cols: [
+                  [
+                      {field: 'permissionId', title: '权限编号', width: 100}
+                      , {field: 'permissionName', title: '权限名', width: 150}
+                      , {field: 'url', title: '权限地址', width: 250}
+                      , {field: 'icon', title: '图标', width: 180, align: 'right',templet: function (res) {
+                          if (res.icon == '' || res.icon == null) {
+                              return "";
+                          } else {
+                              return "<i class=\"layui-icon "+res.icon+"\">";
+                          }
+                      }}, {field: 'exhibition', title: '是否在菜单中显示', width: 200,templet: function (res) {
+                          if (res.exhibition) {
+                              return "是";
+                          } else {
+                              return "否";
+                          }
+                      }}
+                      , {field: 'parentno', title: '父节点编号', width: 110
+                  }, {fixed: '', align: 'center', title: '操作', toolbar: '#bar'}
+                  ]
+              ]
+              ,page: true
+          });
+
+
+          //初始化搜索模块树形菜单
+          treeSelect.render({
+              elem : '#treeSelectSreach',
+              data : localUrl + '/menu/treeSelect',
+              type : 'get',
+              search : true
+          });
+
+            //渲染图标
+          iconPicker.render({
+              elem : '#IconPicker',
+              type : 'fontClass',
+              search : true,
+              page : true,
+              limit : 12,
+              cellWidth : '43px'
+          });
+          iconPicker.render({
+              elem : '#updateIconPicker',
+              type : 'fontClass',
+              search : true,
+              page : true,
+              limit : 12,
+              cellWidth : '43px'
+          });
+
+          //监听添加提交
+          form.on('submit(add)',function(data) {
+              $.post(localUrl + "/permission/save",data.field,function (res) {
+                  if (res.status) {
+                      layer.alert(res.message, {icon: 1
+                      },function () {
+                          layer.closeAll();
+                          //表格重载
+                          table.reload("dataTable", {
+                              where : '', page : {curr : 1}
+                          });
+                      });
+                  }else{
+                      layer.alert(res.message, {icon: 2});
+                  }
+              });
+              return false;
+          });
+
+          //监听搜索
+          form.on('submit(sreach)',function(data) {
+              table.reload("dataTable", {
+                  where : data.field,
+                  page : {
+                      curr : 1
+                      //重新从第 1 页开始
+                  }
+              });
+              return false;
+          });
+
+          //监听修改提交
+          form.on('submit(update)',function(data) {
+              $.post(localUrl + "/permission/update",data.field,function (res) {
+                  if (res.status) {
+                      layer.alert(res.message, {icon: 1
+                      },function () {
+                          layer.closeAll();
+                          //表格重载
+                          table.reload("dataTable", {
+                              where : '', page : {curr : 1}
+                          });
+                      });
+                  }else{
+                      layer.alert(res.message, {icon: 2});
+                  }
+              });
+              return false;
+          });
+
+
+          //头工具栏事件
+          table.on('toolbar(dataTable)', function(obj){
+              if (obj.event === 'addPermission') {
+                  $("#addCheckbox").html("<input type=\"checkbox\" name=\"exhibition\" lay-skin=\"switch\" lay-filter=\"switchTest\" lay-text=\"显示|不显示\">");
+                  treeSelect.destroy('treeSelect');
+                  iconPicker.checkIcon('IconPicker', 'layui-icon-left');
+                  //清空表单信息
+                  form.val("addFrom", {
+                      "permissionName" : null,
+                      "url" : null,
+                      "roleNo":null
+                  });
+
+                  //初始化URL
+                  $("#addUrl").empty();
+                  $('#addUrl').append(new Option("", ""));
+                  $.post(localUrl + "/permission/buildUrl", function (res) {
+                      $.each(res.list, function (index, item) {
+                          $('#addUrl').append(new Option(item, item));// 下拉菜单里添加元素
+                      });
+                      layui.form.render("select");
+                  });
+
+                  //新增页面
+                  layui.use(['layer'], function () {
+                      var w=($(window).width()*0.4);
+                      var h=($(window).height() - 200);
+                      iconPicker.checkIcon('IconPicker', 'layui-icon-right');
+                      layer.open({
+                          type: 1,
+                          area: [w+'px', h +'px'],
+                          fix: false, //不固定
+                          maxmin: true,
+                          shadeClose: true,
+                          shade:0.4,
+                          title: "添加权限",
+                          content: $("#addPermission"),
+                          success : function() {
+                              //渲染树形菜单
+                              treeSelect.render({
+                                  elem : '#treeSelect',
+                                  data : localUrl + '/menu/treeSelect',
+                                  type : 'get',
+                                  search : true
+                              });
+                          }
+                      });
+                  });
+              }
+          });
+
+
+          table.on('tool(dataTable)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+              var data = obj.data //获得当前行数据
+                  ,layEvent = obj.event; //获得 lay-event 对应的值
+              if(layEvent === 'edit'){
+                  //清空表单信息
+                  form.val("updateFrom", {
+                      "permissionName" : null,
+                      "url" : null,
+                      "roleNo":null,
+                      "permissionId":null
+                  });
+                  iconPicker.checkIcon('updateIconPicker', 'layui-icon-left');
+                  treeSelect.destroy('updateTreeSelect');
+
+                  //初始化URL
+                  $("#updateUrl").empty();
+                  $('#updateUrl').append(new Option(data.url, data.url));
+                  $.post(localUrl + "/permission/buildUrl", function (res) {
+                      $.each(res.list, function (index, item) {
+                          $('#updateUrl').append(new Option(item, item));// 下拉菜单里添加元素
+                      });
+
+                      layui.form.render("select");
+                  });
+
+                  //打开页面
+                  var w=($(window).width()*0.4);
+                  var h=($(window).height() - 200);
+                  layer.open({type: 1,shadeClose: true,shade:0.4,title: "编辑权限信息",
+                      area: [w+'px', h +'px'],
+                      fix: false, //不固定
+                      maxmin: true,
+                      content: $("#updatePermission"),
+                      success:function () {
+                          //给表单赋值
+                          form.val("updateFrom", {
+                              "permissionName" : data.permissionName,
+                              "url" : data.url,
+                              "roleNo":data.roleNo,
+                              "permissionId":data.permissionId
+                          });
+                            //设置id
+                          if (data.exhibition){
+                              $("#updateCheckbox").html("<input type=\"checkbox\"  checked='checked' name=\"exhibition\" lay-skin=\"switch\" lay-filter=\"switchTest\" lay-text=\"显示|不显示\">");
+                          }else{
+                              $("#updateCheckbox").html("<input type=\"checkbox\" name=\"exhibition\" lay-skin=\"switch\" lay-filter=\"switchTest\" lay-text=\"显示|不显示\">");
+                          }
+                          form.render();
+
+                          //图标赋值
+                          if (data.icon != null && data.icon != ''){
+                              iconPicker.checkIcon('updateIconPicker', data.icon);
+                          }
+
+                          //开关赋值
+                          //监听指定开关
+                          // form.on('switch(switchTest)', function(dataSwitch){
+                          //     dataSwitch.elem.checked = data.exhibition;
+                          // });
+                          //渲染树形菜单
+                          treeSelect.render({
+                              elem : '#updateTreeSelect',
+                              data : localUrl + '/menu/treeSelect',
+                              type : 'get',
+                              search : true,
+                              success : function() {
+                                  if(data.parentno != '' && data.parentno !=null){
+                                      treeSelect.checkNode('updateTreeSelect', data.parentno);
+                                  }
+                              }
+                          });
+
+                      }
+                  });
+              } else if(layEvent === 'deleteUser'){
+                  layer.confirm('确定要删除权限【 ' + data.permissionName +'】 吗？会对其子节点进行递归删除!请谨慎删除！',{icon: 7,title:"删除"}, function(index){
+                      //向服务端发送删除指令
+                      $.post(localUrl + "/permission/remove",{id:data.permissionId},function (res) {
+                          if (res.status) {
+                              obj.del(); //删除对应行（tr）的DOM结构
+                              layer.alert(res.message, {icon: 1
+                              },function () {
+                                  layer.closeAll();
+                              });
+                          }else{
+                              layer.alert(res.message, {icon: 2});
+                          }
+                      });
+                  });
+              }
+          });
+
+      });
+    </script>
+
+</html>

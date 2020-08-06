@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" lang="">
+<head>
+        <meta charset="UTF-8">
+        <title>角色管理</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{'/css/font.css'}">
+        <link rel="stylesheet" th:href="@{'/css/xadmin.css'}">
+
+        <script charset="utf-8" th:src="@{'/lib/layui/layui.js'}"></script>
+        <script type="text/javascript" th:src="@{'/js/jquery.min.js'}"></script>
+        <script type="text/javascript" th:src="@{'/js/xadmin.js'}"></script>
+
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+    <!-- 表格操作设置-->
+    <script type="text/html" id="bar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="deleteUser">删除</a>
+        <a class="layui-btn layui-btn-xs" lay-event="givePermission">授权</a>
+    </script>
+
+        <div class="x-nav">
+    <span class="layui-breadcrumb">
+            <a href="">系统管理</a>
+            <a>
+              <cite>角色管理</cite></a>
+          </span>
+          <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+            <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i></a>
+        </div>
+
+<!--        表格头部工具栏-->
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="addRole"><i class="layui-icon"></i>添加角色</button>
+            </div>
+        </script>
+
+        <div class="layui-fluid" id="rest" style="display: none">
+            <div class="layui-row">
+                <form action="" method="post" class="layui-form layui-form-pane" lay-filter="addFrom">
+                    <div class="layui-form-item">
+                        <label for="name" class="layui-form-label">
+                            <span class="x-red">*</span>角色名
+                        </label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="name" name="roleName" required=""
+                                   autocomplete="off" class="layui-input" lay-verify="name">
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label for="desc" class="layui-form-label">
+                            描述
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea placeholder="请输入内容" id="desc" name="roleDescribe" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <button class="layui-btn" lay-submit="" lay-filter="add">添加角色</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+<!--    编辑-->
+    <div class="layui-fluid" id="updateDiv" style="display: none">
+        <div class="layui-row">
+            <form action="" method="post" class="layui-form layui-form-pane" lay-filter="updateFrom">
+                <input  style="display: none" name="roleNo">
+                <div class="layui-form-item">
+                    <label for="name" class="layui-form-label">
+                        <span class="x-red">*</span>角色名
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text"  name="roleName" required=""
+                               autocomplete="off" class="layui-input" lay-verify="name">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label for="desc" class="layui-form-label">
+                        描述
+                    </label>
+                    <div class="layui-input-block">
+                        <textarea placeholder="请输入内容"  name="roleDescribe" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <button class="layui-btn" lay-submit="" lay-filter="updateRole">编辑</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!--表格-->
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <table class="layui-table layui-form" id="dataTable" lay-filter="dataTable"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+<!-- 授权-->
+    <div class="layui-fluid" id="tree" style="display: none">
+            <div id="test1" class="demo-tree"></div><br><br>
+            <div class="layui-form-item">
+                <button class="layui-btn"  lay-demo="accredit">授权</button>
+                <button class="layui-btn"  lay-demo="checkAll">全选</button>
+                <button class="layui-btn"  lay-demo="reload">重选</button>
+            </div>
+    </div>
+
+
+
+
+    </body>
+    <script>
+        var localUrl = '[[${#httpServletRequest.getContextPath()}]]';
+            layui.use(['table', 'form','tree','util'], function () {
+                var table = layui.table;
+                var form = layui.form,tree = layui.tree,util=layui.util;
+
+                //渲染表格
+                table.render({
+                    elem: '#dataTable'
+                    , url: localUrl + '/role/init'
+                    ,toolbar: '#toolbar'
+                    , title: '角色信息表'
+                    , cols: [
+                        [
+                            {field: 'roleNo', title: '角色编号', width: 100}
+                            , {field: 'roleName', title: '角色名', width: 150}
+                            , {field: 'roleDescribe', title: '角色描述', width: 150}
+                          , {fixed: '', align: 'center', title: '操作', toolbar: '#bar',width: 350}
+                        ]
+                    ]
+                    ,page: true
+                });
+
+
+                //头工具栏事件
+                table.on('toolbar(dataTable)', function(obj){
+                    if (obj.event === 'addRole') {
+                        //新增页面
+                            layui.use(['layer'], function () {
+                                layer.open({
+                                    type: 1,
+                                    shadeClose: true,
+                                    shade:0.4,
+                                    title: "新增角色",
+                                    content: $("#rest"),
+                                    success : function() {
+                                        form.val("addFrom", {
+                                            "roleName" : null,
+                                            "roleDescribe" : null
+                                        });
+                                    }
+                                });
+                            });
+                    }
+                });
+
+                //表单验证
+                form.verify({
+                    name: function(value, item){ //value：表单的值、item：表单的DOM对象
+                        if (value.length > 10){
+                            return "角色名称不能大于10";
+                        }else if (value.length == 0 || value.trim() == ""){
+                            return "角色名称不能空";
+                        }
+                    }
+                });
+
+                //监听添加提交
+                form.on('submit(add)',function(data) {
+                    $.ajax({
+                        url : localUrl + "/role/save",
+                        type : "post",
+                        data: data.field,
+                        success : function(res) {
+                            if (res.status) {
+                                layer.alert(res.message, {icon: 1
+                                    },function () {
+                                      layer.closeAll();
+                                        //表格重载
+                                        table.reload("dataTable", {
+                                            where : '', page : {curr : 1}
+                                        });
+                                    });
+                            }else{
+                                layer.alert(res.message, {icon: 2});
+                            }
+                        },
+                        error : function() {
+                            layer.tips("服务器内部错误！");
+                        }
+                    });
+                    return false;
+                });
+
+                //监听修改提交
+                form.on('submit(updateRole)',function(data) {
+                    $.post(localUrl + "/role/update",data.field,function (res) {
+                        if (res.status) {
+                            layer.alert(res.message, {icon: 1
+                            },function () {
+                                layer.closeAll();
+                                //表格重载
+                                table.reload("dataTable", {
+                                    where : '', page : {curr : 1}
+                                });
+                            });
+                        }else{
+                            layer.alert(res.message, {icon: 2});
+                        }
+                    });
+                    return false;
+                });
+
+
+                var treeData;
+                var roleId;
+                /**
+                 * 所有选中节点id
+                 * @type {Array}
+                 */
+                var ids = [];
+                //监听行工具事件
+                table.on('tool(dataTable)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    if(layEvent === 'edit'){
+                        //给表单赋值
+                        form.val("updateFrom", {
+                            "roleName" : data.roleName,
+                            "roleDescribe" : data.roleDescribe,
+                            "roleNo":data.roleNo
+                        });
+                        layer.open({type: 1,shadeClose: true,shade:0.4,title: "编辑角色信息",
+                            content: $("#updateDiv")
+                        });
+                    } else if(layEvent === 'deleteUser'){
+                        layer.confirm('确定要删除角色 ' + data.roleName +' 吗？',{icon: 3,title:"删除"}, function(index){
+                            //向服务端发送删除指令
+                            $.post(localUrl + "/role/remove",data,function (res) {
+                                if (res.status) {
+                                    obj.del(); //删除对应行（tr）的DOM结构
+                                    layer.alert(res.message, {icon: 1
+                                    },function () {
+                                        layer.closeAll();
+                                    });
+                                }else{
+                                    layer.alert(res.message, {icon: 2});
+                                }
+                            });
+                        });
+                    } else if(layEvent === 'givePermission'){
+                        //授权
+                        var w=($(window).width()*0.4);
+                        var h=($(window).height() - 150);
+                        layer.open({
+                            type: 1,
+                            area: [w+'px', h +'px'],
+                            fix: false, //不固定
+                            maxmin: true,
+                            shadeClose: true,
+                            shade:0.4,
+                            title: "正在为角色【" + data.roleName + "】授权",
+                            content: $("#tree"),
+                            success: function () {
+                                roleId = data.roleNo;
+                                //渲染树形
+                                $.post(localUrl + "/permission/permissionList", {roleNo: data.roleNo},
+                                    function (result) {
+                                        treeData = result.list;
+                                        if (result.status){
+                                            tree.render({
+                                                elem: '#test1'  //绑定元素
+                                                , showCheckbox: true
+                                                , accordion: true
+                                                , showLine: false
+                                                , data: result.list
+                                                ,id: 'accreditTree' //定义索引
+                                            });
+                                        }else{
+                                            layer.msg(result.message);
+                                        }
+                                    });
+                            }
+                        });
+                    }
+                });
+
+
+                var permissionListCache,roleIdCache;
+                //按钮事件
+                util.event('lay-demo', {
+                    checkAll: function(){
+                        allSelect(treeData);
+                        tree.reload('accreditTree', {data:treeData});
+                    }
+                    ,accredit: function(){
+                        //授权后改变 roleIdCache 缓存值，然它自动去更新缓存
+                        roleIdCache = null;
+                        //授权
+                        ids = [];
+                        var checkData = tree.getChecked('accreditTree');
+                        treeCheckId(checkData);
+                        $.ajax({
+                            type: 'post',
+                            url: localUrl + "/permission/authorization",
+                            data: {permissionIds: JSON.stringify(ids),roleId:roleId},
+                            dateType:'json',
+                            success: function (result) {
+                                if (result.status) {
+                                    layer.alert(result.message, {icon: 1
+                                    },function () {
+                                        layer.closeAll();
+                                    });
+                                }else{
+                                    layer.alert(result.message, {icon: 2});
+                                }
+                            }
+                        })
+                    }
+                    ,reload:function () {
+                        if (roleId == roleIdCache){
+                            tree.reload('accreditTree', {data:permissionListCache.list});
+                            return;
+                        }
+                        // 重选
+                        $.post(localUrl + "/permission/permissionList", {roleNo: roleId},
+                            function (result) {
+                                roleIdCache = roleId;
+                                permissionListCache = result;
+                                tree.reload('accreditTree', {data:result.list});
+                            });
+                    }
+                });
+
+                // 全选全选
+                function allSelect(database) {
+                    $.each(database, function (index, item) {
+                        item.checked = true;
+                        if (item.children.length) {
+                            allSelect(item.children);
+                        }
+                    })
+                }
+
+                //递归获取选中的id
+                function treeCheckId (database) {
+                    $.each(database, function (index, item) {
+                        ids.push(item.id);
+                        if (item.children.length) {
+                            treeCheckId(item.children);
+                        }
+                    });
+                }
+
+            });
+    </script>
+
+</html>

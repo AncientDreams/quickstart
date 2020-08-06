@@ -1,0 +1,40 @@
+##### Spring Boot 主配置文件 #####
+
+spring:
+  application:
+    # 项目名称
+    name: quickstart
+  profiles:
+    # 选择配置文件（环境）
+    # 开发环境：application-dev.yml
+    # 测试环境：application-test.yml
+    # 生产环境：application-prod.yml
+    active: dev
+  thymeleaf:
+    #关闭thymeleaf的缓存
+    cache: false
+
+
+##### Mybatis-plus #####
+mybatis-plus:
+  #类型别名扫描的包
+  type-aliases-package: com.example.quickstart          # 定义所有操作类的别名所在包
+  mapper-locations: classpath:mapper/*.xml        # 所有的mapper映射文件
+  configuration:
+    #懒加载相关
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: false
+    #最好加上该设置，否则mybatis默认情况下equals,clone,hashCode,toString都会触发懒加载
+    #该属性是个Set集合，需要使用“-”来逐一添加一项或多项配置（数组、List类似）
+    lazy-load-trigger-methods:
+      - ""
+    #映射骆驼命名法
+    map-underscore-to-camel-case: true
+    #在本项目之中开启二级缓存
+    cache-enabled: true
+
+# 日志
+logging:
+  config: classpath:logback/logback.xml
+  file:
+    path: log
