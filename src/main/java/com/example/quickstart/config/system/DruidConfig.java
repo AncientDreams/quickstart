@@ -29,7 +29,7 @@ public class DruidConfig {
                 new StatViewServlet(), "/druid/*");
         // 白名单
         servletRegistrationBean.addInitParameter("allow",
-                "127.0.0.1");
+                "0.0.0.0/0");
         // 黑名单
         servletRegistrationBean.addInitParameter("deny", "192.168.1.200");
         // 用户名
