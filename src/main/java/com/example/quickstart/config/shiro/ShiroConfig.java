@@ -1,14 +1,20 @@
 package com.example.quickstart.config.shiro;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.quickstart.annotation.AllowAccess;
+import com.example.quickstart.annotation.AutoRegisterUrl;
 import com.example.quickstart.constant.ShiroConstant;
 import com.example.quickstart.constant.SystemUrlConstant;
+import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.service.ISystemLogService;
+import com.example.quickstart.service.ISystemPermissionService;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +28,7 @@ import java.util.*;
 
 /**
  * <p>
- * Shiro 配置管理
+ * Shiro 配置管理，启动权限自动注册
  * </p>
  *
  * @author ZhangXianYu   Email: 1600501744@qq.com
@@ -37,16 +43,21 @@ public class ShiroConfig {
 
     private ISystemLogService iSystemLogService;
 
-    public ShiroConfig(UserRealm userRealm, ApplicationContext applicationContext, ISystemLogService iSystemLogService) {
-        this.userRealm = userRealm;
+    private ISystemPermissionService iSystemPermissionService;
+
+    public ShiroConfig(ApplicationContext applicationContext, UserRealm userRealm, ISystemLogService iSystemLogService, ISystemPermissionService iSystemPermissionService) {
         this.applicationContext = applicationContext;
+        this.userRealm = userRealm;
         this.iSystemLogService = iSystemLogService;
+        this.iSystemPermissionService = iSystemPermissionService;
     }
 
     /**
      * 容器初始化时候保存记录所有的需要管理的RUL，合理使用保证线程安区。
      */
     public static List<String> urlList = new ArrayList<>();
+
+    private Logger logger = LoggerFactory.getLogger(ShiroConfig.class);
 
     @Bean
     public SecurityManager securityManager() {
@@ -92,9 +103,6 @@ public class ShiroConfig {
         filterChainDefinitionMap.put(SystemUrlConstant.WELCOME, ShiroConstant.ANON);
         filterChainDefinitionMap.put(SystemUrlConstant.MENU, ShiroConstant.ANON);
 
-        // Druid监控平台
-        filterChainDefinitionMap.put(SystemUrlConstant.DRUID, ShiroConstant.ANON);
-
         // 静态资源
         filterChainDefinitionMap.put("/static/**", ShiroConstant.ANON);
         filterChainDefinitionMap.put("/js/**", ShiroConstant.ANON);
@@ -102,6 +110,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/fonts/**", ShiroConstant.ANON);
         filterChainDefinitionMap.put("/images/**", ShiroConstant.ANON);
         filterChainDefinitionMap.put("/lib/**", ShiroConstant.ANON);
+
+        // Druid监控平台
+        filterChainDefinitionMap.put(SystemUrlConstant.DRUID, ShiroConstant.USER);
 
         buildNeedPerms(filterChainDefinitionMap);
         filterChainDefinitionMap.put("/**", ShiroConstant.USER);
@@ -111,24 +122,30 @@ public class ShiroConfig {
 
     private void buildNeedPerms(Map<String, String> filterChainDefinitionMap) {
         Set<String> controllerClass = getAllControllerClass();
+        //数据库URL列表
+        List<String> urlList = iSystemPermissionService.findAllUrl();
         //反射获取controller  的URL
         controllerClass.forEach(className -> {
             try {
                 Class z = Class.forName(className);
                 if (z.isAnnotationPresent(RequestMapping.class) && !z.isAnnotationPresent(AllowAccess.class)) {
                     RequestMapping requestMapping = (RequestMapping) z.getAnnotation(RequestMapping.class);
-                    String headUrl = resetUrl(requestMapping.value()[0]);
-                    Method[] methods = z.getDeclaredMethods();
+                    String headUrl = restUrl(requestMapping.value()[0]);
+                    Method[] methods = arrayReverse(z.getDeclaredMethods());
                     String url;
                     for (Method method : methods) {
                         if (method.isAnnotationPresent(AllowAccess.class)) {
                             continue;
                         }
                         url = getMethodUrl(method);
+                        //检查权限是否已经被注册过，跳过自动注册
+                        if(!urlList.contains(restUrl(headUrl + url))){
+                            autoRegisterUrl(method,restUrl(headUrl + url));
+                        }
                         if (StringUtils.isEmpty(url)) {
                             continue;
                         }
-                        url = resetUrl(headUrl.concat(url));
+                        url = restUrl(headUrl.concat(url));
                         filterChainDefinitionMap.put(url, ShiroConstant.PERMS + "[" + url + "]");
                         urlList.add(url);
                     }
@@ -138,6 +155,43 @@ public class ShiroConfig {
             }
         });
     }
+
+    private void autoRegisterUrl(Method method, String url) {
+        if (method.isAnnotationPresent(AutoRegisterUrl.class)) {
+            AutoRegisterUrl autoRegisterUrl = method.getAnnotation(AutoRegisterUrl.class);
+
+            SystemPermission saveInfo = new SystemPermission();
+            saveInfo.setIcon(autoRegisterUrl.icon());
+            saveInfo.setPermissionName(autoRegisterUrl.permissionName());
+            saveInfo.setExhibition(autoRegisterUrl.isShow());
+            if (!StringUtils.isEmpty(autoRegisterUrl.parentName())) {
+                LambdaQueryWrapper<SystemPermission> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(SystemPermission::getPermissionName, autoRegisterUrl.parentName());
+                List<SystemPermission> permissionList = iSystemPermissionService.list(lambdaQueryWrapper);
+                if (permissionList.isEmpty()) {
+                    logger.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找不到父节点。", url, autoRegisterUrl.parentName());
+                    return;
+                } else if (permissionList.size() > 1) {
+                    logger.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找到多个记录，名称重复!", url, autoRegisterUrl.parentName());
+                    return;
+                }
+                SystemPermission parenPermission = permissionList.get(0);
+                saveInfo.setUrl(url);
+                saveInfo.setParentno(parenPermission.getPermissionId());
+            }else{
+                //没有Url的菜单栏，无法通过Url区分是否存在于系统，判断是否重复
+               if(iSystemPermissionService.count(new LambdaQueryWrapper<SystemPermission>()
+                        .eq(SystemPermission::getPermissionName,autoRegisterUrl.permissionName())) > 0){
+                   return;
+               }
+            }
+            if (!iSystemPermissionService.save(saveInfo)) {
+                logger.error("自动注册权限失败，原因：Url-【{}】保存失败信息失败！", url);
+            }
+        }
+
+    }
+
 
     /**
      * 获取方法上的 value
@@ -171,7 +225,7 @@ public class ShiroConfig {
      * @param url url
      * @return String
      */
-    private String resetUrl(String url) {
+    private String restUrl(String url) {
         return url.startsWith("/") ? url : "/".concat(url);
     }
 
@@ -201,6 +255,20 @@ public class ShiroConfig {
             controllerClassName.add(className);
         }
         return controllerClassName;
+    }
+
+    /**
+     * 数组倒过来，保证方法是从上往下解析
+     *
+     * @param methods 方法数组
+     * @return 排序后
+     */
+    private Method[] arrayReverse(Method[] methods) {
+        Method[] newMethods = new Method[methods.length];
+        for (int i = 0; i < methods.length; i++) {
+            newMethods[(methods.length - 1) - i] = methods[i];
+        }
+        return newMethods;
     }
 
 }

@@ -89,4 +89,11 @@ public interface ISystemPermissionService extends IService<SystemPermission> {
      * @return ResultBody
      */
     ResultBody buildUrl();
+
+    /**
+     * 查询数据库中所有的权限Url
+     *
+     * @return List<String>
+     */
+    List<String> findAllUrl();
 }

@@ -190,6 +190,11 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
         return new ResultBody<>(true, MessageConstant.QUERY_SUCCESS, urlList);
     }
 
+    @Override
+    public List<String> findAllUrl() {
+        return systemPermissionMapper.findAllUrl();
+    }
+
 
     /**
      * 构建菜单

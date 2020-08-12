@@ -49,7 +49,7 @@ public class UserRealm extends AuthorizingRealm {
         SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
 
         LambdaQueryWrapper<SystemUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SystemUser::getUserName, username);
+        lambdaQueryWrapper.eq(SystemUser::getUserName, username).eq(SystemUser::getStatus,"0");
         SystemUser systemUser = iSystemUserService.getOne(lambdaQueryWrapper);
 
         //用户角色
