@@ -123,7 +123,7 @@ public class ShiroConfig {
     private void buildNeedPerms(Map<String, String> filterChainDefinitionMap) {
         Set<String> controllerClass = getAllControllerClass();
         //数据库URL列表
-        List<String> urlList = iSystemPermissionService.findAllUrl();
+        List<String> dataUrlList = iSystemPermissionService.findAllUrl();
         //反射获取controller  的URL
         controllerClass.forEach(className -> {
             try {
@@ -139,7 +139,7 @@ public class ShiroConfig {
                         }
                         url = getMethodUrl(method);
                         //检查权限是否已经被注册过，跳过自动注册
-                        if(!urlList.contains(restUrl(headUrl + url))){
+                        if(!dataUrlList.contains(restUrl(headUrl + url))){
                             autoRegisterUrl(method,restUrl(headUrl + url));
                         }
                         if (StringUtils.isEmpty(url)) {
