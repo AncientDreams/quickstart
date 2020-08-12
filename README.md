@@ -1,5 +1,5 @@
 # quickstart
-基于Spingboot、mybatis-plus、shiro、layui的后台管理系统快发开发脚手架，内置权限角色控制，各种日志SQL监控。
+基于Spring boot、Mybatis-plus、Shiro、Layui的后台管理系统快发开发脚手架，内置权限角色控制，各种日志SQL监控。
 # 演示地址
 
 账号：admin   密码：123456
