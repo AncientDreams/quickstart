@@ -74,6 +74,12 @@ public class SystemLog implements Serializable {
     @TableField("request_parameter")
     private String requestParameter;
 
+    /**
+     * 逻辑删除标记
+     */
+    @TableField("flag")
+    private String flag;
+
     public Integer getLogId() {
         return logId;
     }
@@ -144,6 +150,14 @@ public class SystemLog implements Serializable {
 
     public void setRequestParameter(String requestParameter) {
         this.requestParameter = requestParameter;
+    }
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 
     @Override

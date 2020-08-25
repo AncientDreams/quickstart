@@ -68,6 +68,12 @@ public class SystemUser implements Serializable {
     @TableField("status")
     private String status;
 
+    /**
+     * 逻辑删除标记
+     */
+    @TableField("flag")
+    private String flag;
+
     public Integer getUserId() {
         return userId;
     }
@@ -130,6 +136,14 @@ public class SystemUser implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 
     @Override

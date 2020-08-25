@@ -35,6 +35,12 @@ public class SystemParameter implements Serializable {
     @TableField("creation_time")
     private LocalDateTime creationTime;
 
+    /**
+     * 逻辑删除标记
+     */
+    @TableField("flag")
+    private String flag;
+
     public String getParameterId() {
         return parameterId;
     }
@@ -73,6 +79,14 @@ public class SystemParameter implements Serializable {
 
     public void setCreationTime(LocalDateTime creationTime) {
         this.creationTime = creationTime;
+    }
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 
     @Override

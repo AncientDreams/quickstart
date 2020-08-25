@@ -24,6 +24,7 @@ CREATE TABLE `system_log` (
   `is_ajax` tinyint(4) NOT NULL COMMENT '是否是ajax请求 ',
   `request_time` datetime NOT NULL COMMENT '请求时间',
   `request_by` varchar(10) NOT NULL COMMENT '请求创建人',
+  `flag` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
   PRIMARY KEY (`log_id`,`is_ajax`)
 ) ENGINE=InnoDB AUTO_INCREMENT=723 DEFAULT CHARSET=utf8;
 
@@ -38,6 +39,7 @@ CREATE TABLE `system_parameter` (
   `parameter_key` varchar(32) NOT NULL COMMENT '参数键名',
   `parameter_value` varchar(200) NOT NULL COMMENT '参数键值',
   `creation_time` datetime NOT NULL COMMENT '创建时间',
+  `flag` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
   PRIMARY KEY (`parameter_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 
@@ -204,6 +206,7 @@ CREATE TABLE `system_user` (
   `email` varchar(30) DEFAULT NULL COMMENT '邮件',
   `phone` varchar(20) DEFAULT NULL COMMENT '手机号码',
   `status` char(1) NOT NULL COMMENT '0-正常',
+  `flag` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE KEY `user_name` (`user_name`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
@@ -211,9 +214,9 @@ CREATE TABLE `system_user` (
 -- ----------------------------
 -- Records of system_user
 -- ----------------------------
-INSERT INTO `system_user` VALUES ('1', 'admin', 'D05A6A0CB27619DD88083ACA4F9C1C8E', '2CF10FBF4F3E11B6E2F78DE31C845102', '小张', '1600501744@qq.com', '18545552525', '0');
-INSERT INTO `system_user` VALUES ('14', 'kaiho', 'A320FE5AC16D514A7FE6B55CB08A1FF0', '2D812927405C1536E0085774CCB164D6', '蒋某', '28444@qq.com', '12453628575', '0');
-INSERT INTO `system_user` VALUES ('15', 'karl', '8CA4FF2EFD8C5EFABE0596730FB1F29B', '19FA67149F57447F16C7B36C8F0B1061', '凯', '161198@qq.com', '15742368963', '0');
+INSERT INTO `system_user` VALUES (1, 'admin', 'D05A6A0CB27619DD88083ACA4F9C1C8E', '2CF10FBF4F3E11B6E2F78DE31C845102', '小张', '1600501744@qq.com', '18545552525', '0', 0);
+INSERT INTO `system_user` VALUES (14, 'kaiho', 'A320FE5AC16D514A7FE6B55CB08A1FF0', '2D812927405C1536E0085774CCB164D6', '蒋某', '2849256844@qq.com', '15211104364', '0', 0);
+INSERT INTO `system_user` VALUES (15, 'karl', '8CA4FF2EFD8C5EFABE0596730FB1F29B', '19FA67149F57447F16C7B36C8F0B1061', '凯', '1611818698@qq.com', '17674701248', '0', 0);
 
 -- ----------------------------
 -- Table structure for system_user_role
