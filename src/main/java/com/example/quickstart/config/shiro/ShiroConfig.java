@@ -134,13 +134,18 @@ public class ShiroConfig {
                     Method[] methods = arrayReverse(z.getDeclaredMethods());
                     String url;
                     for (Method method : methods) {
-                        if (method.isAnnotationPresent(AllowAccess.class)) {
-                            continue;
+                        try {
+                            if (method.isAnnotationPresent(AllowAccess.class)) {
+                                continue;
+                            }
+                        } catch (Exception e) {
+                            logger.error("注解@AutoRegisterUrl  priority() 属性，请保证排序顺序 如 1，2，3，4，5", e);
+                            break;
                         }
                         url = getMethodUrl(method);
                         //检查权限是否已经被注册过，跳过自动注册
-                        if(!dataUrlList.contains(restUrl(headUrl + url))){
-                            autoRegisterUrl(method,restUrl(headUrl + url));
+                        if (!dataUrlList.contains(restUrl(headUrl + url))) {
+                            autoRegisterUrl(method, restUrl(headUrl + url));
                         }
                         if (StringUtils.isEmpty(url)) {
                             continue;
@@ -164,6 +169,7 @@ public class ShiroConfig {
             saveInfo.setIcon(autoRegisterUrl.icon());
             saveInfo.setPermissionName(autoRegisterUrl.permissionName());
             saveInfo.setExhibition(autoRegisterUrl.isShow());
+            saveInfo.setUrl(url);
             if (!StringUtils.isEmpty(autoRegisterUrl.parentName())) {
                 LambdaQueryWrapper<SystemPermission> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.eq(SystemPermission::getPermissionName, autoRegisterUrl.parentName());
@@ -176,17 +182,16 @@ public class ShiroConfig {
                     return;
                 }
                 SystemPermission parenPermission = permissionList.get(0);
-                saveInfo.setUrl(url);
                 saveInfo.setParentno(parenPermission.getPermissionId());
-            }else{
+            } else {
                 //没有Url的菜单栏，无法通过Url区分是否存在于系统，判断是否重复
-               if(iSystemPermissionService.count(new LambdaQueryWrapper<SystemPermission>()
-                        .eq(SystemPermission::getPermissionName,autoRegisterUrl.permissionName())) > 0){
-                   return;
-               }
+                if (iSystemPermissionService.count(new LambdaQueryWrapper<SystemPermission>()
+                        .eq(SystemPermission::getPermissionName, autoRegisterUrl.permissionName())) > 0) {
+                    return;
+                }
             }
             if (!iSystemPermissionService.save(saveInfo)) {
-                logger.error("自动注册权限失败，原因：Url-【{}】保存失败信息失败！", url);
+                logger.error("自动注册权限失败，原因：Url-【{}】保存权限信息失败！", url);
             }
         }
 
@@ -258,15 +263,24 @@ public class ShiroConfig {
     }
 
     /**
-     * 数组倒过来，保证方法是从上往下解析
+     * 根据权限的优先注册级别来排序方法
      *
      * @param methods 方法数组
-     * @return 排序后
+     * @return 排序后方法数组
      */
     private Method[] arrayReverse(Method[] methods) {
         Method[] newMethods = new Method[methods.length];
-        for (int i = 0; i < methods.length; i++) {
-            newMethods[(methods.length - 1) - i] = methods[i];
+        int j = 0;
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(AutoRegisterUrl.class)) {
+                AutoRegisterUrl autoRegisterUrl = method.getAnnotation(AutoRegisterUrl.class);
+                if (autoRegisterUrl.priority() != 0) {
+                    newMethods[autoRegisterUrl.priority() - 1] = method;
+                    continue;
+                }
+            }
+            newMethods[methods.length - j - 1] = method;
+            j++;
         }
         return newMethods;
     }

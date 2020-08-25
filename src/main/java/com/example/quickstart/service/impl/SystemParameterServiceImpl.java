@@ -7,7 +7,6 @@ import com.example.quickstart.bo.PagingTool;
 import com.example.quickstart.bo.ResultBody;
 import com.example.quickstart.constant.MessageConstant;
 import com.example.quickstart.entity.SystemParameter;
-import com.example.quickstart.entity.SystemUser;
 import com.example.quickstart.mapper.SystemParameterMapper;
 import com.example.quickstart.service.ISystemParameterService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

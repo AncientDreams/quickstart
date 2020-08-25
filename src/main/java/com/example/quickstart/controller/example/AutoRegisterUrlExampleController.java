@@ -21,9 +21,10 @@ public class AutoRegisterUrlExampleController {
 
 
     /**
-     * 菜单，无需@requestMapper，它无实际用处，只是用来分类。不指定父节点，表示最外层分类菜单
+     * 菜单，无需@requestMapper，它无实际用处，只是用来分类。不指定父节点，表示最外层分类菜单.
+     * 因为是本类中的其他权限的父节点，要保证它优先注册，所有使用属性 : priority
      */
-    @AutoRegisterUrl(permissionName = "测试自动注册", isShow = true)
+    @AutoRegisterUrl(permissionName = "测试自动注册", isShow = true, priority = 1)
     public void menu() {
 
     }

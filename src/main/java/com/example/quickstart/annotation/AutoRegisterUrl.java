@@ -39,7 +39,14 @@ public @interface AutoRegisterUrl {
     String icon() default "layui-icon-right";
 
     /**
-     * 父节点名称
+     * 父节点名称，请确保父节点存在！
      */
     String parentName() default "";
+
+    /**
+     * 注册优先级别 <br>
+     * 如同一个类下多个需要注册的权限，父节点就需要优先注册。 数字越小优先级别越高！0表示不参与排序。<br>
+     * 注意：请保证排序顺序 如 1，2，3，4，5
+     */
+    int priority() default 0;
 }
