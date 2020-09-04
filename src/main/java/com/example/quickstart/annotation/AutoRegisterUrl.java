@@ -30,7 +30,7 @@ public @interface AutoRegisterUrl {
      * 在左边的菜单栏中是否显示<br>
      * true:显示  false 不显示
      */
-    boolean isShow();
+    boolean isShow() default false;
 
     /**
      * 权限图标 <br>

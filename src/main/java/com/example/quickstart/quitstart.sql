@@ -20,7 +20,7 @@ CREATE TABLE `system_log` (
   `server_ip` varchar(50) NOT NULL COMMENT '服务器ip',
   `url` varchar(50) NOT NULL COMMENT '请求地址',
   `request_type` varchar(10) NOT NULL COMMENT '请求类型，如：post、get',
-  `request_parameter` varchar(200) DEFAULT NULL,
+  `request_parameter` varchar(2000) DEFAULT NULL,
   `is_ajax` tinyint(4) NOT NULL COMMENT '是否是ajax请求 ',
   `request_time` datetime NOT NULL COMMENT '请求时间',
   `request_by` varchar(10) NOT NULL COMMENT '请求创建人',
