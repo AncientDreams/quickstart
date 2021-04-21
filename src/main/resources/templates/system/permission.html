@@ -291,7 +291,7 @@
           //监听添加提交
           form.on('submit(add)',function(data) {
               $.post(localUrl + "/permission/save",data.field,function (res) {
-                  if (res.status) {
+                  if (res.result) {
                       layer.alert(res.message, {icon: 1
                       },function () {
                           layer.closeAll();
@@ -322,7 +322,7 @@
           //监听修改提交
           form.on('submit(update)',function(data) {
               $.post(localUrl + "/permission/update",data.field,function (res) {
-                  if (res.status) {
+                  if (res.result) {
                       layer.alert(res.message, {icon: 1
                       },function () {
                           layer.closeAll();
@@ -469,7 +469,7 @@
                   layer.confirm('确定要删除权限【 ' + data.permissionName +'】 吗？会对其子节点进行递归删除!请谨慎删除！',{icon: 7,title:"删除"}, function(index){
                       //向服务端发送删除指令
                       $.post(localUrl + "/permission/remove",{id:data.permissionId},function (res) {
-                          if (res.status) {
+                          if (res.result) {
                               obj.del(); //删除对应行（tr）的DOM结构
                               layer.alert(res.message, {icon: 1
                               },function () {

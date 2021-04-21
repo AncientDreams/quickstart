@@ -1,13 +1,14 @@
 package com.example.quickstart.config.shiro;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.entity.SystemUser;
 import com.example.quickstart.entity.SystemUserRole;
 import com.example.quickstart.service.ISystemPermissionService;
 import com.example.quickstart.service.ISystemUserRoleService;
 import com.example.quickstart.service.ISystemUserService;
+import lombok.AllArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -28,20 +29,14 @@ import java.util.List;
  * @since 2020-07-15 17:30
  */
 @Component
+@AllArgsConstructor
 public class UserRealm extends AuthorizingRealm {
 
-    private ISystemUserService iSystemUserService;
+    private final ISystemUserService iSystemUserService;
 
-    private ISystemUserRoleService iSystemUserRoleService;
+    private final ISystemUserRoleService iSystemUserRoleService;
 
-    private ISystemPermissionService iSystemPermissionService;
-
-    public UserRealm(ISystemUserService iSystemUserService, ISystemUserRoleService iSystemUserRoleService
-            , ISystemPermissionService iSystemPermissionService) {
-        this.iSystemPermissionService = iSystemPermissionService;
-        this.iSystemUserService = iSystemUserService;
-        this.iSystemUserRoleService = iSystemUserRoleService;
-    }
+    private final ISystemPermissionService iSystemPermissionService;
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
@@ -82,12 +77,12 @@ public class UserRealm extends AuthorizingRealm {
         lambdaQueryWrapper.eq(SystemUser::getUserName, token.getUsername()).eq(SystemUser::getStatus, "0");
         SystemUser systemUser = iSystemUserService.getOne(lambdaQueryWrapper);
         if (systemUser == null) {
-            throw new AccountException(MessageConstant.USER_NOT_EXIST);
+            throw new AccountException(ResultConstant.USER_NOT_EXIST);
         }
 
         String password = new String((char[]) token.getCredentials());
         if (!iSystemUserService.checkPassword(systemUser.getPassword(), password, systemUser.getSalt())) {
-            throw new AccountException(MessageConstant.LOGIN_ERROR);
+            throw new AccountException(ResultConstant.LOGIN_ERROR);
         }
         return new SimpleAuthenticationInfo(token.getPrincipal(), password, getName());
     }

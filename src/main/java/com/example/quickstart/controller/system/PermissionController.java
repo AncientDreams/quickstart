@@ -1,12 +1,14 @@
 package com.example.quickstart.controller.system;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.quickstart.bo.MenuNode;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.bo.R;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.service.ISystemPermissionService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * <p>
@@ -25,18 +28,15 @@ import java.util.Arrays;
  */
 @RequestMapping(value = SystemUrlConstant.PERMISSION)
 @Controller
+@AllArgsConstructor
 public class PermissionController {
 
-    private ISystemPermissionService iSystemPermissionService;
-
-    public PermissionController(ISystemPermissionService iSystemPermissionService) {
-        this.iSystemPermissionService = iSystemPermissionService;
-    }
+    private final ISystemPermissionService iSystemPermissionService;
 
     @RequestMapping(value = SystemUrlConstant.LIST)
     @ResponseBody
-    public ResultBody list() {
-        return new ResultBody<>(true, MessageConstant.QUERY_SUCCESS, iSystemPermissionService.list());
+    public R<List<SystemPermission>> list() {
+        return R.success(ResultConstant.QUERY_SUCCESS, iSystemPermissionService.list());
     }
 
     @GetMapping(value = SystemUrlConstant.VIEW)
@@ -46,22 +46,22 @@ public class PermissionController {
 
     @RequestMapping(value = SystemUrlConstant.SAVE)
     @ResponseBody
-    public ResultBody save(SystemPermission permission, HttpServletRequest request) {
+    public R<String> save(SystemPermission permission, HttpServletRequest request) {
         String exhibition = request.getParameter("exhibition");
         permission.setExhibition(!StringUtils.isEmpty(exhibition));
         boolean saveResult = iSystemPermissionService.save(permission);
-        return new ResultBody<>(saveResult, saveResult ? MessageConstant.SAVE_SUCCESS : MessageConstant.SAVE_FAIL);
+        return saveResult ? R.success(ResultConstant.SAVE_SUCCESS) : R.fail(ResultConstant.SAVE_FAIL);
     }
 
     @RequestMapping(value = SystemUrlConstant.UPDATE)
     @ResponseBody
-    public ResultBody update(SystemPermission permission, HttpServletRequest request) {
+    public R<String> update(SystemPermission permission, HttpServletRequest request) {
         return iSystemPermissionService.updateSystemPermission(permission, request);
     }
 
     @RequestMapping(value = SystemUrlConstant.REMOVE)
     @ResponseBody
-    public ResultBody remove(Integer id) {
+    public R<String> remove(Integer id) {
         return iSystemPermissionService.removeSystemPermissionById(id);
     }
 
@@ -75,14 +75,13 @@ public class PermissionController {
 
     @RequestMapping(value = "/permissionList")
     @ResponseBody
-    public ResultBody permissionList(String roleNo) {
-        return new ResultBody<>(true, MessageConstant.QUERY_SUCCESS,
-                iSystemPermissionService.buildMenuNode(iSystemPermissionService.list(), roleNo));
+    public R<List<MenuNode>> permissionList(String roleNo) {
+        return R.success(iSystemPermissionService.buildMenuNode(iSystemPermissionService.list(), roleNo));
     }
 
     @PostMapping(SystemUrlConstant.AUTHORIZATION)
     @ResponseBody
-    public ResultBody authorization(String permissionIds, Integer roleId) {
+    public R<String> authorization(String permissionIds, Integer roleId) {
         //处理前端传来的数组字符串，为啥不转数组？方法都试过了，无效
         String nullArrayString = "[]";
         if (nullArrayString.equals(permissionIds)) {
@@ -95,7 +94,7 @@ public class PermissionController {
 
     @PostMapping("/buildUrl")
     @ResponseBody
-    public ResultBody buildUrl() {
+    public R<List<String>> buildUrl() {
         return iSystemPermissionService.buildUrl();
     }
 }

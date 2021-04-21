@@ -30,7 +30,7 @@ public class CodeGeneratorUtil {
      * <p>
      * 需要填写作者，因为自动生成类头注释需要有类作者名称。
      */
-    private static String author = "";
+    private static String author = "ZhangXianYu";
 
 
     /**
@@ -70,10 +70,10 @@ public class CodeGeneratorUtil {
         DataSourceConfig dsc = new DataSourceConfig();
 
         //JDBC四要素
-        dsc.setUrl("");
+        dsc.setUrl("jdbc:mysql://47.113.97.132:3306/quitstart?serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true");
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");
-        dsc.setUsername("");
-        dsc.setPassword("");
+        dsc.setUsername("root");
+        dsc.setPassword("zxy123!@");
         mpg.setDataSource(dsc);
 
         // 包配置

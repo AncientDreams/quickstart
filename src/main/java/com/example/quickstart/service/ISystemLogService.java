@@ -2,7 +2,7 @@ package com.example.quickstart.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.entity.SystemLog;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -31,7 +31,7 @@ public interface ISystemLogService extends IService<SystemLog> {
      * 删除系统操作记录
      *
      * @param request 请求信息
-     * @return ResultBody
+     * @return R
      */
-    ResultBody delete(HttpServletRequest request);
+    R<String> delete(HttpServletRequest request);
 }

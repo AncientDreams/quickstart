@@ -164,7 +164,7 @@
                 layer.confirm('确定要删除此条操作记录吗？',{icon: 7,title:"删除"}, function(index){
                     //向服务端发送删除指令
                     $.post(localUrl + "/systemLog/remove",{logId:data.logId},function (res) {
-                        if (res.status) {
+                        if (res.result) {
                             obj.del(); //删除对应行（tr）的DOM结构
                             layer.alert(res.message, {icon: 1
                             },function () {

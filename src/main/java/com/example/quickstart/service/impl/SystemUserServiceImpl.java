@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.example.quickstart.annotation.MethodRunLog;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.bo.R;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.entity.SystemUser;
 import com.example.quickstart.entity.SystemUserRole;
 import com.example.quickstart.mapper.SystemUserMapper;
@@ -17,12 +17,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.quickstart.utils.Md5Util;
 import com.example.quickstart.utils.RsaUtil;
 import com.example.quickstart.vo.SystemUserAndRoleVo;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.StringUtils;
@@ -41,18 +41,13 @@ import java.util.Map;
  * @since 2020-07-13
  */
 @Service
+@Slf4j
+@AllArgsConstructor
 public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemUser> implements ISystemUserService {
 
-    private Logger logger = LoggerFactory.getLogger(SystemUserServiceImpl.class);
+    private final SystemUserMapper systemUserMapper;
 
-    private SystemUserMapper systemUserMapper;
-
-    private ISystemUserRoleService iSystemUserRoleService;
-
-    public SystemUserServiceImpl(SystemUserMapper systemUserMapper, ISystemUserRoleService iSystemUserRoleService) {
-        this.systemUserMapper = systemUserMapper;
-        this.iSystemUserRoleService = iSystemUserRoleService;
-    }
+    private final ISystemUserRoleService iSystemUserRoleService;
 
     @Override
     public boolean checkPassword(String systemPassword, String password, String salt) {
@@ -62,7 +57,17 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
     @MethodRunLog
     @Override
-    public ResultBody login(HttpServletRequest request) {
+    public R<String> login(HttpServletRequest request) {
+        //验证token
+        try {
+            String sessionToken = request.getSession().getAttribute("token").toString();
+            String requestToken = request.getParameter("token");
+            if (!sessionToken.equals(requestToken)) {
+                return R.fail(ResultConstant.TOKEN_ERROR);
+            }
+        } catch (Exception e) {
+            return R.fail(ResultConstant.TOKEN_ERROR);
+        }
         String userName = request.getParameter("username");
         String password = request.getParameter("password");
         //账户名，密码解密
@@ -71,8 +76,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
             password = RsaUtil.decrypt(password);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("登录账户密码RSA解密失败！" + e.getMessage(), e);
-            return new ResultBody(false, MessageConstant.SERVER_ERROR);
+            log.error("登录账户密码RSA解密失败！" + e.getMessage(), e);
+            return R.fail(ResultConstant.SERVER_ERROR);
         }
 
         try {
@@ -80,11 +85,10 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
             UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
             subject.login(token);
         } catch (AuthenticationException e) {
-            logger.info(e.getMessage());
-            return new ResultBody(false, e.getMessage());
+            log.info(e.getMessage());
+            return R.fail(e.getMessage());
         }
-
-        return new ResultBody(true, MessageConstant.LOGIN_SUCCESS);
+        return R.success(ResultConstant.LOGIN_SUCCESS);
     }
 
     @Override
@@ -106,7 +110,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     }
 
     @Override
-    public ResultBody addUser(HttpServletRequest request) {
+    public R<String> addUser(HttpServletRequest request) {
         //真实姓名
         String name = request.getParameter("name");
         //登录名称
@@ -114,7 +118,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
         Integer userByName = systemUserMapper.selectCount(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getUserName, username));
         if (SqlHelper.retBool(userByName)) {
-            return new ResultBody(false, MessageConstant.USER_EXIST);
+            return R.fail(ResultConstant.USER_EXIST);
         }
 
         String phone = request.getParameter("phone");
@@ -132,8 +136,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         systemUser.setStatus("1");
         try {
             if (!SqlHelper.retBool(systemUserMapper.insert(systemUser))) {
-                logger.error("新增用户失败！用户信息：{}", systemUser.toString());
-                return new ResultBody(true, MessageConstant.SAVE_FAIL);
+                log.error("新增用户失败！用户信息：{}", systemUser.toString());
+                return R.fail(ResultConstant.SAVE_FAIL);
             }
 
             SystemUser user = systemUserMapper.selectOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getUserName, username));
@@ -141,17 +145,17 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
             List<SystemUserRole> systemUserRoles = buildSystemUserRoles(request, user.getUserId());
             if (!systemUserRoles.isEmpty()) {
                 if (!iSystemUserRoleService.saveBatch(systemUserRoles)) {
-                    logger.error("新增角色信息失败！角色信息：{}", systemUserRoles.toString());
-                    throw new Exception(MessageConstant.SAVE_FAIL);
+                    log.error("新增角色信息失败！角色信息：{}", systemUserRoles.toString());
+                    throw new Exception(ResultConstant.SAVE_FAIL);
                 }
             }
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             e.printStackTrace();
-            return new ResultBody(false, e.getMessage());
+            return R.fail(e.getMessage());
         }
-        return new ResultBody(true, MessageConstant.SAVE_SUCCESS);
+        return R.success(ResultConstant.SAVE_SUCCESS);
     }
 
     @Override
@@ -160,7 +164,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     }
 
     @Override
-    public ResultBody updateUserInfo(HttpServletRequest request, SystemUser systemUser) {
+    public R<String> updateUserInfo(HttpServletRequest request, SystemUser systemUser) {
         //判断状态
         String status = "on";
         if (status.equals(systemUser.getStatus())) {
@@ -171,8 +175,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
         try {
             if (!SqlHelper.retBool(systemUserMapper.updateById(systemUser))) {
-                logger.error("修改用户信息失败！用户信息：{}", systemUser.toString());
-                return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+                log.error("修改用户信息失败！用户信息：{}", systemUser.toString());
+                return R.fail(ResultConstant.UPDATE_FAIL);
             }
 
             //删除当前所有的用户角色信息，重新赋予角色
@@ -180,8 +184,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
                     .eq(SystemUserRole::getUserId, systemUser.getUserId());
             if (!iSystemUserRoleService.list(lambdaQueryWrapper).isEmpty()) {
                 if (!iSystemUserRoleService.remove(lambdaQueryWrapper)) {
-                    logger.error("删除用户信息失败！");
-                    throw new Exception(MessageConstant.REMOVE_FAIL);
+                    log.error("删除用户信息失败！");
+                    throw new Exception(ResultConstant.REMOVE_FAIL);
                 }
             }
 
@@ -190,21 +194,21 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
             //新增
             if (!systemUserRoles.isEmpty()) {
                 if (!iSystemUserRoleService.saveBatch(systemUserRoles)) {
-                    logger.error("批量新增用户信息失败！");
-                    throw new Exception(MessageConstant.SAVE_FAIL);
+                    log.error("批量新增用户信息失败！");
+                    throw new Exception(ResultConstant.SAVE_FAIL);
                 }
             }
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             e.printStackTrace();
-            return new ResultBody(false, e.getMessage());
+            return R.fail(e.getMessage());
         }
-        return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+        return R.success(ResultConstant.UPDATE_SUCCESS);
     }
 
     @Override
-    public ResultBody resetPassword(HttpServletRequest request) {
+    public R<String> resetPassword(HttpServletRequest request) {
         Subject subject = SecurityUtils.getSubject();
         //再次验证密码
         String passCode = request.getParameter("pass");
@@ -213,42 +217,42 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         //验证用户是否存在
         SystemUser systemUser = systemUserMapper.selectOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getUserId, userId));
         if (systemUser == null) {
-            return new ResultBody(false, MessageConstant.USER_NOT_EXIST);
+            return R.fail(ResultConstant.USER_NOT_EXIST);
         }
-        logger.info("正在修改用户密码，当前登录人：{}，被修改用户信息：{}", subject.getPrincipal(), systemUser.toString());
+        log.info("正在修改用户密码，当前登录人：{}，被修改用户信息：{}", subject.getPrincipal(), systemUser.toString());
 
         if (passCode.equals(passWord)) {
             systemUser.setSalt(Md5Util.encode(identifying()));
             systemUser.setPassword(Md5Util.encode(passCode + systemUser.getSalt()));
             if (!SqlHelper.retBool(systemUserMapper.updateById(systemUser))) {
-                logger.error("修改用户密码失败！用户信息：{}", systemUser.toString());
-                return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+                log.error("修改用户密码失败！用户信息：{}", systemUser.toString());
+                return R.fail(ResultConstant.UPDATE_FAIL);
             }
         } else {
-            return new ResultBody(false, MessageConstant.CHECK_PASSWORD_FAIL);
+            return R.fail(ResultConstant.CHECK_PASSWORD_FAIL);
         }
-        return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+        return R.success(ResultConstant.UPDATE_SUCCESS);
     }
 
     @MethodRunLog(methodName = "删除用户")
     @Override
-    public ResultBody removeUserByUserId(HttpServletRequest request) {
+    public R<String> removeUserByUserId(HttpServletRequest request) {
         Subject subject = SecurityUtils.getSubject();
-        logger.info("正在删除用户信息，当前登录人：{}", subject.getPrincipal());
+        log.info("正在删除用户信息，当前登录人：{}", subject.getPrincipal());
         String userId = request.getParameter("userId");
         try {
             //验证用户是否存在
             SystemUser systemUser = systemUserMapper.selectOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getUserId, userId));
             if (systemUser == null) {
-                logger.info("用户不存在，id{}", userId);
-                return new ResultBody(false, MessageConstant.USER_NOT_EXIST);
+                log.info("用户不存在，id{}", userId);
+                return R.fail(ResultConstant.USER_NOT_EXIST);
             }
-            logger.info("被删除用户信息，{}", systemUser.toString());
+            log.info("被删除用户信息，{}", systemUser.toString());
 
             //删除用户信息
             if (!SqlHelper.retBool(systemUserMapper.deleteById(userId))) {
-                logger.info("删除用户失败，id{}", userId);
-                return new ResultBody(false, MessageConstant.REMOVE_FAIL);
+                log.info("删除用户失败，id{}", userId);
+                return R.fail(ResultConstant.REMOVE_FAIL);
             }
             //删除用户角色信息
             LambdaQueryWrapper<SystemUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<SystemUserRole>()
@@ -256,16 +260,16 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
             if (iSystemUserRoleService.count(lambdaQueryWrapper) > 0) {
                 if (!iSystemUserRoleService.remove(lambdaQueryWrapper)) {
-                    logger.info("删除用户失败，id{}", userId);
-                    throw new Exception(MessageConstant.REMOVE_FAIL);
+                    log.info("删除用户失败，id{}", userId);
+                    throw new Exception(ResultConstant.REMOVE_FAIL);
                 }
             }
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             e.printStackTrace();
-            return new ResultBody(false, e.getMessage());
+            return R.fail(e.getMessage());
         }
-        return new ResultBody(true, MessageConstant.REMOVE_SUCCESS);
+        return R.success(ResultConstant.REMOVE_SUCCESS);
     }
 
     @Override
@@ -275,15 +279,15 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     }
 
     @Override
-    public ResultBody updateUserInfoByUser(SystemUser systemUser) {
+    public R<String> updateUserInfoByUser(SystemUser systemUser) {
         if (updateById(systemUser)) {
-            return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+            return R.success(ResultConstant.UPDATE_SUCCESS);
         }
-        return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+        return R.fail(ResultConstant.UPDATE_FAIL);
     }
 
     @Override
-    public ResultBody updatePassWord(HttpServletRequest request) {
+    public R<String> updatePassWord(HttpServletRequest request) {
         String oldPassWord = request.getParameter("oldPass");
         String newPassWord = request.getParameter("newPass");
 
@@ -292,23 +296,23 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         lambdaQueryWrapper.eq(SystemUser::getUserName, username);
         SystemUser systemUser = getOne(lambdaQueryWrapper);
         if (systemUser == null) {
-            return new ResultBody(false, MessageConstant.USER_NOT_EXIST);
+            return R.fail(ResultConstant.USER_NOT_EXIST);
         } else if ("01".equals(systemUser.getStatus())) {
-            return new ResultBody(false, "用户已被停用！");
+            return R.fail("用户已被停用！");
         }
 
         if (!checkPassword(systemUser.getPassword(), oldPassWord, systemUser.getSalt())) {
-            return new ResultBody(false, "原密码输入错误！");
+            return R.fail("原密码输入错误！");
         }
 
         //修改密码
         systemUser.setSalt(Md5Util.encode(identifying()));
         systemUser.setPassword(Md5Util.encode(newPassWord + systemUser.getSalt()));
         if (!updateById(systemUser)) {
-            logger.error("修改用户密码失败！用户信息：{}", systemUser.toString());
-            return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+            log.error("修改用户密码失败！用户信息：{}", systemUser.toString());
+            return R.fail(ResultConstant.UPDATE_FAIL);
         }
-        return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+        return R.success(ResultConstant.UPDATE_SUCCESS);
     }
 
     private List<SystemUserRole> buildSystemUserRoles(HttpServletRequest request, Integer uid) {

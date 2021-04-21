@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -15,6 +17,7 @@ import java.io.Serializable;
  * @since 2020-07-13
  */
 @TableName("system_permission")
+@Data
 public class SystemPermission implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -55,60 +58,4 @@ public class SystemPermission implements Serializable {
     @TableField("parentno")
     private Integer parentno;
 
-    public Integer getPermissionId() {
-        return permissionId;
-    }
-
-    public void setPermissionId(Integer permissionId) {
-        this.permissionId = permissionId;
-    }
-    public String getPermissionName() {
-        return permissionName;
-    }
-
-    public void setPermissionName(String permissionName) {
-        this.permissionName = permissionName;
-    }
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public boolean isExhibition() {
-        return exhibition;
-    }
-
-    public void setExhibition(boolean exhibition) {
-        this.exhibition = exhibition;
-    }
-
-    public Integer getParentno() {
-        return parentno;
-    }
-
-    public void setParentno(Integer parentno) {
-        this.parentno = parentno;
-    }
-
-    @Override
-    public String toString() {
-        return "SystemPermission{" +
-            "permissionId=" + permissionId +
-            ", permissionName=" + permissionName +
-            ", url=" + url +
-            ", icon=" + icon +
-            ", show=" + exhibition +
-            ", parentno=" + parentno +
-        "}";
-    }
 }

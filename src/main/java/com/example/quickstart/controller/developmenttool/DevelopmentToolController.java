@@ -2,10 +2,11 @@ package com.example.quickstart.controller.developmenttool;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.example.quickstart.bo.ResultBody;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.annotation.MethodRunLog;
+import com.example.quickstart.bo.R;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.constant.SystemUrlConstant;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,30 +27,24 @@ import java.sql.*;
  */
 @Controller
 @RequestMapping(value = "/tool")
+@AllArgsConstructor
 public class DevelopmentToolController {
 
-    private DataSource dataSource;
-
-    public DevelopmentToolController(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    private final DataSource dataSource;
 
     @RequestMapping(value = SystemUrlConstant.VIEW)
-    public ModelAndView view(){
+    public ModelAndView view() {
         return new ModelAndView("tool/sql");
     }
 
     @PostMapping("/executeQuery")
     @ResponseBody
-    public ResultBody executeQuery(HttpServletRequest request) throws SQLException {
+    @MethodRunLog
+    public R<JSONArray> executeQuery(HttpServletRequest request) {
         String sql = request.getParameter("sql");
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = dataSource.getConnection();
-            preparedStatement = connection.prepareStatement(sql);
-            resultSet = preparedStatement.executeQuery();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
 
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
@@ -63,19 +58,9 @@ public class DevelopmentToolController {
                 }
                 jsonArray.add(jsonObject);
             }
-            return new ResultBody(true, MessageConstant.QUERY_SUCCESS, jsonArray);
+            return R.success(ResultConstant.QUERY_SUCCESS, jsonArray);
         } catch (SQLException e) {
-            return new ResultBody(false, e.getMessage());
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (preparedStatement != null) {
-                preparedStatement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
+            return R.fail(e.getMessage());
         }
     }
 

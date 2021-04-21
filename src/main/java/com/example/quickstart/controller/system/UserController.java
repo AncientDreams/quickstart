@@ -3,12 +3,13 @@ package com.example.quickstart.controller.system;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.annotation.AllowAccess;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemRole;
 import com.example.quickstart.entity.SystemUser;
 import com.example.quickstart.service.ISystemUserService;
 import com.example.quickstart.vo.SystemUserAndRoleVo;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,18 +30,15 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Controller
 @RequestMapping(value = SystemUrlConstant.USER)
+@AllArgsConstructor
 public class UserController {
 
-    private ISystemUserService iSystemUserService;
-
-    public UserController(ISystemUserService iSystemUserService) {
-        this.iSystemUserService = iSystemUserService;
-    }
+    private final ISystemUserService iSystemUserService;
 
     @AllowAccess
     @PostMapping(SystemUrlConstant.LOGIN)
     @ResponseBody
-    public ResultBody login(HttpServletRequest request) {
+    public R<String> login(HttpServletRequest request) {
         return iSystemUserService.login(request);
     }
 
@@ -59,7 +57,7 @@ public class UserController {
 
     @PostMapping(SystemUrlConstant.SAVE)
     @ResponseBody
-    public ResultBody addUser(HttpServletRequest request) {
+    public R<String> addUser(HttpServletRequest request) {
         return iSystemUserService.addUser(request);
     }
 
@@ -91,19 +89,19 @@ public class UserController {
 
     @PostMapping(SystemUrlConstant.UPDATE)
     @ResponseBody
-    public ResultBody update(SystemUser systemUser, HttpServletRequest request) {
+    public R<String> update(SystemUser systemUser, HttpServletRequest request) {
         return iSystemUserService.updateUserInfo(request, systemUser);
     }
 
     @PostMapping(value = "/resetPassword")
     @ResponseBody
-    public ResultBody resetPassword(HttpServletRequest request) {
+    public R<String> resetPassword(HttpServletRequest request) {
         return iSystemUserService.resetPassword(request);
     }
 
     @PostMapping(value = SystemUrlConstant.REMOVE)
     @ResponseBody
-    public ResultBody removeUser(HttpServletRequest request) {
+    public R<String> removeUser(HttpServletRequest request) {
         return iSystemUserService.removeUserByUserId(request);
     }
 
@@ -114,14 +112,14 @@ public class UserController {
     @PostMapping(value = "/updateUserInfo")
     @ResponseBody
     @AllowAccess
-    public ResultBody updateUserInfoByUser(SystemUser systemUser) {
+    public R<String> updateUserInfoByUser(SystemUser systemUser) {
         return iSystemUserService.updateUserInfoByUser(systemUser);
     }
 
     @PostMapping(value = "/updatePassWord")
     @ResponseBody
     @AllowAccess
-    public ResultBody updatePassWord(HttpServletRequest request) {
+    public R<String> updatePassWord(HttpServletRequest request) {
         return iSystemUserService.updatePassWord(request);
     }
 

@@ -2,12 +2,13 @@ package com.example.quickstart.controller.system;
 
 
 import com.example.quickstart.bo.MenuNode;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.service.ISystemPermissionService;
 import com.example.quickstart.service.ISystemUserService;
 import com.example.quickstart.utils.RsaUtil;
+import lombok.AllArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -29,20 +31,18 @@ import java.util.List;
  * @since 2020-07-14 9:53
  */
 @Controller
+@AllArgsConstructor
 public class SystemController {
 
-    private ISystemPermissionService iSystemPermissionService;
+    private final ISystemPermissionService iSystemPermissionService;
 
-    private ISystemUserService iSystemUserService;
-
-    public SystemController(ISystemPermissionService iSystemPermissionService, ISystemUserService iSystemUserService) {
-        this.iSystemPermissionService = iSystemPermissionService;
-        this.iSystemUserService = iSystemUserService;
-    }
+    private final ISystemUserService iSystemUserService;
 
     @RequestMapping(SystemUrlConstant.LOGIN)
     public ModelAndView login(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView("login");
+        String token = UUID.randomUUID().toString();
+        request.getSession().setAttribute("token", token);
         modelAndView.addObject("publicKey", RsaUtil.getRsaPublicKey());
         modelAndView.addObject("message", request.getParameter("message"));
         return modelAndView;
@@ -88,8 +88,8 @@ public class SystemController {
 
     @RequestMapping(value = SystemUrlConstant.PERMISSION_DENIED)
     @ResponseBody
-    public ResultBody permissionDenied(HttpServletRequest request) {
-        return new ResultBody(false, request.getParameter("message"));
+    public R<String> permissionDenied(HttpServletRequest request) {
+        return R.fail(request.getParameter("message"));
     }
 
 }

@@ -100,7 +100,7 @@
                 </label>
                 <div class="layui-input-inline">
                     <input type="text"  name="parameterName" lay-verify="required"
-                           autocomplete="off" class="layui-input">
+                           autocomplete="off" class="layui-input" readonly="readonly">
                 </div>
             </div>
 
@@ -231,7 +231,7 @@
                     var data = obj.data;
                     $.ajax({url: localUrl + "/systemParameter/remove",type: "post",data: {parameterKey:data.parameterId},
                         success: function (res) {
-                            if (res.status) {
+                            if (res.result) {
                                 layer.alert(res.message, {icon: 1}, function () {
                                     layer.closeAll();
                                     obj.del(); //删除对应行（tr）的DOM结构
@@ -263,7 +263,7 @@
         form.on('submit(add)', function(data) {
             $.ajax({url: localUrl + "/systemParameter/save",type: "post",data: data.field,
                 success: function (res) {
-                    if (res.status) {
+                    if (res.result) {
                         layer.alert(res.message, {icon: 1}, function () {
                             layer.closeAll();
                             table.reload("dataTable", {
@@ -285,7 +285,7 @@
         form.on('submit(update)', function(data) {
             $.ajax({url: localUrl + "/systemParameter/update",type: "post",data: data.field,
                 success: function (res) {
-                    if (res.status) {
+                    if (res.result) {
                         layer.alert(res.message, {icon: 1}, function () {
                             layer.closeAll();
                             table.reload("dataTable", {

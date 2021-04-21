@@ -9,12 +9,12 @@ import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.service.ISystemLogService;
 import com.example.quickstart.service.ISystemPermissionService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,29 +35,22 @@ import java.util.*;
  * @since 2020-07-13 10:25
  */
 @Configuration
+@AllArgsConstructor
+@Slf4j
 public class ShiroConfig {
 
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    private UserRealm userRealm;
+    private final UserRealm userRealm;
 
-    private ISystemLogService iSystemLogService;
+    private final ISystemLogService iSystemLogService;
 
-    private ISystemPermissionService iSystemPermissionService;
-
-    public ShiroConfig(ApplicationContext applicationContext, UserRealm userRealm, ISystemLogService iSystemLogService, ISystemPermissionService iSystemPermissionService) {
-        this.applicationContext = applicationContext;
-        this.userRealm = userRealm;
-        this.iSystemLogService = iSystemLogService;
-        this.iSystemPermissionService = iSystemPermissionService;
-    }
+    private final ISystemPermissionService iSystemPermissionService;
 
     /**
      * 容器初始化时候保存记录所有的需要管理的RUL，合理使用保证线程安区。
      */
     public static List<String> urlList = new ArrayList<>();
-
-    private Logger logger = LoggerFactory.getLogger(ShiroConfig.class);
 
     @Bean
     public SecurityManager securityManager() {
@@ -127,9 +120,9 @@ public class ShiroConfig {
         //反射获取controller  的URL
         controllerClass.forEach(className -> {
             try {
-                Class z = Class.forName(className);
+                Class<?> z = Class.forName(className);
                 if (z.isAnnotationPresent(RequestMapping.class) && !z.isAnnotationPresent(AllowAccess.class)) {
-                    RequestMapping requestMapping = (RequestMapping) z.getAnnotation(RequestMapping.class);
+                    RequestMapping requestMapping = z.getAnnotation(RequestMapping.class);
                     String headUrl = restUrl(requestMapping.value()[0]);
                     Method[] methods = arrayReverse(z.getDeclaredMethods());
                     String url;
@@ -139,7 +132,7 @@ public class ShiroConfig {
                                 continue;
                             }
                         } catch (Exception e) {
-                            logger.error("注解@AutoRegisterUrl  priority() 属性，请保证排序顺序 如 1，2，3，4，5", e);
+                            log.error("注解@AutoRegisterUrl  priority() 属性，请保证排序顺序 如 1，2，3，4，5", e);
                             break;
                         }
                         url = getMethodUrl(method);
@@ -175,10 +168,10 @@ public class ShiroConfig {
                 lambdaQueryWrapper.eq(SystemPermission::getPermissionName, autoRegisterUrl.parentName());
                 List<SystemPermission> permissionList = iSystemPermissionService.list(lambdaQueryWrapper);
                 if (permissionList.isEmpty()) {
-                    logger.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找不到父节点。", url, autoRegisterUrl.parentName());
+                    log.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找不到父节点。", url, autoRegisterUrl.parentName());
                     return;
                 } else if (permissionList.size() > 1) {
-                    logger.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找到多个记录，名称重复!", url, autoRegisterUrl.parentName());
+                    log.error("自动注册权限失败，原因：Url-【{}】父节点名称【{}】找到多个记录，名称重复!", url, autoRegisterUrl.parentName());
                     return;
                 }
                 SystemPermission parenPermission = permissionList.get(0);
@@ -191,7 +184,7 @@ public class ShiroConfig {
                 }
             }
             if (!iSystemPermissionService.save(saveInfo)) {
-                logger.error("自动注册权限失败，原因：Url-【{}】保存权限信息失败！", url);
+                log.error("自动注册权限失败，原因：Url-【{}】保存权限信息失败！", url);
             }
         }
 

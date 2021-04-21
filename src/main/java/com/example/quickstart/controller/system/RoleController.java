@@ -2,13 +2,16 @@ package com.example.quickstart.controller.system;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.bo.R;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemRole;
 import com.example.quickstart.service.ISystemRoleService;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
 
 
 /**
@@ -21,13 +24,10 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @RestController
 @RequestMapping(value = SystemUrlConstant.ROLE)
+@AllArgsConstructor
 public class RoleController {
 
-    private ISystemRoleService iSystemRoleService;
-
-    public RoleController(ISystemRoleService iSystemRoleService) {
-        this.iSystemRoleService = iSystemRoleService;
-    }
+    private final ISystemRoleService iSystemRoleService;
 
     @GetMapping(SystemUrlConstant.VIEW)
     public ModelAndView view() {
@@ -40,8 +40,8 @@ public class RoleController {
     }
 
     @RequestMapping(SystemUrlConstant.LIST)
-    public ResultBody list() {
-        return new ResultBody<>(true, MessageConstant.QUERY_SUCCESS, iSystemRoleService.list());
+    public R<List<SystemRole>> list() {
+        return R.success(ResultConstant.QUERY_SUCCESS, iSystemRoleService.list());
     }
 
     @RequestMapping(SystemUrlConstant.INIT)
@@ -51,20 +51,20 @@ public class RoleController {
     }
 
     @PostMapping(SystemUrlConstant.SAVE)
-    public ResultBody save(SystemRole systemRole) {
+    public R<String> save(SystemRole systemRole) {
         return iSystemRoleService.saveSystemRole(systemRole);
     }
 
     @PostMapping(SystemUrlConstant.UPDATE)
-    public ResultBody update(SystemRole systemRole) {
+    public R<String> update(SystemRole systemRole) {
         if (iSystemRoleService.updateById(systemRole)) {
-            return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+            return R.success(ResultConstant.UPDATE_SUCCESS);
         }
-        return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+        return R.fail(ResultConstant.UPDATE_FAIL);
     }
 
     @PostMapping(SystemUrlConstant.REMOVE)
-    public ResultBody delete(SystemRole systemRole) {
+    public R<String> delete(SystemRole systemRole) {
         return iSystemRoleService.deleteSystemRole(systemRole);
     }
 

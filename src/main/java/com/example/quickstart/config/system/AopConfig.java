@@ -2,6 +2,7 @@ package com.example.quickstart.config.system;
 
 import com.example.quickstart.annotation.EnableCache;
 import com.example.quickstart.annotation.MethodRunLog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -28,14 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Aspect
 @Component
+@Slf4j
 public class AopConfig {
-
-    private Logger log = LoggerFactory.getLogger(AopConfig.class);
 
     /**
      * 缓存线程安全容器
      */
-    private Map<String, CacheProperty> cacheMap = new ConcurrentHashMap<>();
+    private final Map<String, CacheProperty> cacheMap = new ConcurrentHashMap<>();
 
     @Around("@annotation(methodRunLog)")
     public Object around(ProceedingJoinPoint proceedingJoinPoint, MethodRunLog methodRunLog) {

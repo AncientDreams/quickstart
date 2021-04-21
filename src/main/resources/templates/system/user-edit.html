@@ -109,7 +109,7 @@
                 $.post(localUrl + "/role/list", function (result) {
                     var roles = $("#roles").val().split(',');
                     var chebox = "";
-                    $.each(result.list, function(index, val) {
+                    $.each(result.data, function(index, val) {
                         var flag = false;
                         for (var i =0;i<roles.length;i++){
                             if (val.roleNo == roles[i]){
@@ -142,7 +142,7 @@
                             type : "post",
                             data: data.field,
                             success : function(res) {
-                                if (res.status) {
+                                if (res.result) {
                                     layer.alert(res.message, {
                                             icon: 1
                                         },

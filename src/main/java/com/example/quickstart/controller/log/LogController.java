@@ -1,14 +1,17 @@
 package com.example.quickstart.controller.log;
 
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.annotation.AllowAccess;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.service.ILogService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 /**
@@ -21,13 +24,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Controller
 @RequestMapping(value = "/log")
+@AllArgsConstructor
 public class LogController {
 
-    private ILogService iLogService;
-
-    public LogController(ILogService iLogService) {
-        this.iLogService = iLogService;
-    }
+    private final ILogService iLogService;
 
     @RequestMapping(value = SystemUrlConstant.VIEW)
     public ModelAndView view() {
@@ -36,15 +36,23 @@ public class LogController {
 
     @RequestMapping(value = SystemUrlConstant.LIST)
     @ResponseBody
-    public ResultBody list(String date) {
+    public R<List<String>> list(String date) {
         return iLogService.queryTimeByDate(date);
     }
 
     @RequestMapping(value = "/queryLog")
     @ResponseBody
-    public ResultBody queryLogFileInfo(HttpServletRequest request) {
+    public R<List<String>> queryLogFileInfo(HttpServletRequest request) {
         return iLogService.queryLogFileInfo(request);
     }
+
+    @RequestMapping(value = "/getFileSize")
+    @ResponseBody
+    @AllowAccess
+    public R<String> getFileSize(HttpServletRequest request) {
+        return iLogService.getFileSize(request);
+    }
+
 
 }
 

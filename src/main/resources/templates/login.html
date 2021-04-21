@@ -26,6 +26,7 @@
 <body class="login-bg">
 <input id="publicKey" style="display: none" th:value="${publicKey}">
 <input id="message" style="display: none" th:value="${message}">
+<input id="token" style="display: none" th:value="${session.token}">
 <div class="login layui-anim layui-anim-up">
     <div class="message">x-admin2.0-管理登录</div>
     <div id="darkbannerwrap"></div>
@@ -85,10 +86,11 @@
                 var indexs = layer.load(2);
                 $.post(localUrl + "/user/login", {
                     username: encryptPublic($("#username").val()),
-                    password: encryptPublic($("#password").val())
+                    password: encryptPublic($("#password").val()),
+                    token: $("#token").val()
                 }, function (result) {
                     layer.close(indexs);
-                    if (result.status) {
+                    if (result.result) {
                         window.location.href = localUrl + "/index";
                     } else {
                         layer.msg(result.message);

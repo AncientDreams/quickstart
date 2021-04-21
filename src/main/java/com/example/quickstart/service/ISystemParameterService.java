@@ -2,7 +2,7 @@ package com.example.quickstart.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.entity.SystemParameter;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -29,23 +29,23 @@ public interface ISystemParameterService extends IService<SystemParameter> {
      * 添加系统参数
      *
      * @param systemParameter systemParameter
-     * @return ResultBody
+     * @return R
      */
-    ResultBody addSystemParameter(SystemParameter systemParameter);
+    R<String> addSystemParameter(SystemParameter systemParameter);
 
     /**
      * 修改系统参数
      *
      * @param systemParameter systemParameter
-     * @return ResultBody
+     * @return R
      */
-    ResultBody updateSystemParameter(SystemParameter systemParameter);
+    R<String> updateSystemParameter(SystemParameter systemParameter);
 
     /**
      * 通过key删除参数名称
      *
      * @param key 参数key
-     * @return ResultBody
+     * @return R
      */
-    ResultBody removeByKey(String key);
+    R<String> removeByKey(String key);
 }

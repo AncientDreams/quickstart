@@ -8,48 +8,48 @@ package com.example.quickstart.constant;
  * @author ZhangXianYu   Email: 1600501744@qq.com
  * @since 2020-07-13 15:00
  */
-public class SystemUrlConstant {
+public interface SystemUrlConstant {
 
-    public static final String PERMISSION = "/permission";
+    String PERMISSION = "/permission";
 
-    public static final String USER = "/user";
+    String USER = "/user";
 
-    public static final String ROLE = "/role";
+    String ROLE = "/role";
 
-    public static final String DEBUG = "/debug";
+    String DEBUG = "/debug";
 
-    public static final String INIT = "/init";
+    String INIT = "/init";
 
-    public static final String MENU = "/menu";
+    String MENU = "/menu";
 
-    public static final String INDEX = "/index";
+    String INDEX = "/index";
 
-    public static final String LOGIN = "/login";
+    String LOGIN = "/login";
 
-    public static final String WELCOME = "/welcome";
+    String WELCOME = "/welcome";
 
-    public static final String ERROR = "/error";
+    String ERROR = "/error";
 
-    public static final String VIEW = "/view";
+    String VIEW = "/view";
 
-    public static final String SAVE = "/save";
+    String SAVE = "/save";
 
-    public static final String REMOVE = "/remove";
+    String REMOVE = "/remove";
 
-    public static final String UPDATE = "/update";
+    String UPDATE = "/update";
 
-    public static final String LIST = "/list";
+    String LIST = "/list";
 
-    public static final String GET = "/GET";
+    String GET = "/GET";
 
-    public static final String DRUID = "/druid/**";
+    String DRUID = "/druid/**";
 
-    public static final String AUTHORIZATION = "/authorization";
+    String AUTHORIZATION = "/authorization";
 
-    public static final String EXIT = "/exit";
+    String EXIT = "/exit";
 
-    public static final String PERMISSION_DENIED = "/permissionDenied";
+    String PERMISSION_DENIED = "/permissionDenied";
 
-    public static final String SYSTEM_PARAMETER = "/systemParameter";
+    String SYSTEM_PARAMETER = "/systemParameter";
 
 }

@@ -5,17 +5,17 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.MenuNode;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.config.shiro.ShiroConfig;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.entity.SystemRolePermission;
 import com.example.quickstart.mapper.SystemPermissionMapper;
 import com.example.quickstart.service.ISystemPermissionService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.quickstart.service.ISystemRolePermissionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.StringUtils;
@@ -32,20 +32,14 @@ import java.util.List;
  * @author ZhangXianYu
  * @since 2020-07-13
  */
+@Slf4j
+@AllArgsConstructor
 @Service
 public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMapper, SystemPermission> implements ISystemPermissionService {
 
-    private Logger logger = LoggerFactory.getLogger(SystemPermissionServiceImpl.class);
+    private final SystemPermissionMapper systemPermissionMapper;
 
-    private SystemPermissionMapper systemPermissionMapper;
-
-    private ISystemRolePermissionService iSystemRolePermissionService;
-
-    public SystemPermissionServiceImpl(SystemPermissionMapper systemPermissionMapper,
-                                       ISystemRolePermissionService iSystemRolePermissionService) {
-        this.systemPermissionMapper = systemPermissionMapper;
-        this.iSystemRolePermissionService = iSystemRolePermissionService;
-    }
+    private final ISystemRolePermissionService iSystemRolePermissionService;
 
     @Override
     public List<SystemPermission> findByUerName(String userName, String exhibition) {
@@ -58,7 +52,7 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
     }
 
     @Override
-    public ResultBody authorization(List<String> permissionIds, Integer roleId) {
+    public R<String> authorization(List<String> permissionIds, Integer roleId) {
         try {
             //获取角色的所有拥有权限id
             List<Integer> ids = systemPermissionMapper.findPermissionIdByRoleId(roleId.toString());
@@ -79,9 +73,9 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
             //mybatis-plus批量新增是原子性的
             if (!systemRolePermissions.isEmpty()) {
                 if (!iSystemRolePermissionService.saveBatch(systemRolePermissions)) {
-                    logger.error("授权失败，批量插入异常。permissionIds：{}，roleId：{}", permissionIds, roleId);
+                    log.error("授权失败，批量插入异常。permissionIds：{}，roleId：{}", permissionIds, roleId);
                     //失败直接返回
-                    return new ResultBody(false, MessageConstant.GRANT_FAIL);
+                    return R.fail(ResultConstant.GRANT_FAIL);
                 }
             }
 
@@ -89,8 +83,8 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
                 //如果为空，代表去除角色所有的权限
                 if (!iSystemRolePermissionService.remove(new LambdaQueryWrapper<SystemRolePermission>().
                         eq(SystemRolePermission::getRoleId, roleId))) {
-                    logger.error("授权失败，批量删除异常。roleId：{}", roleId);
-                    throw new Exception(MessageConstant.GRANT_FAIL);
+                    log.error("授权失败，批量删除异常。roleId：{}", roleId);
+                    throw new Exception(ResultConstant.GRANT_FAIL);
                 }
             } else {
                 //角色需要删除的权限id
@@ -108,8 +102,8 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
                     lambdaQueryWrapper.eq(SystemRolePermission::getRoleId, roleId)
                             .in(SystemRolePermission::getPermissionId, removePermissionIds);
                     if (!iSystemRolePermissionService.remove(lambdaQueryWrapper)) {
-                        logger.error("授权失败，批量删除异常。removePermissionIds：{}，roleId：{}", removePermissionIds, roleId);
-                        throw new Exception(MessageConstant.GRANT_FAIL);
+                        log.error("授权失败，批量删除异常。removePermissionIds：{}，roleId：{}", removePermissionIds, roleId);
+                        throw new Exception(ResultConstant.GRANT_FAIL);
                     }
                 }
             }
@@ -117,9 +111,9 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             e.printStackTrace();
-            return new ResultBody(false, e.getMessage());
+            return R.fail(e.getMessage());
         }
-        return new ResultBody(true, MessageConstant.GRANT_SUCCESS);
+        return R.success(ResultConstant.GRANT_SUCCESS);
     }
 
     @Override
@@ -146,33 +140,33 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
     }
 
     @Override
-    public ResultBody updateSystemPermission(SystemPermission permission, HttpServletRequest request) {
+    public R<String> updateSystemPermission(SystemPermission permission, HttpServletRequest request) {
         try {
             String exhibition = request.getParameter("exhibition");
             permission.setExhibition(!StringUtils.isEmpty(exhibition));
             if (systemPermissionMapper.updateById(permission) < 1) {
-                return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+                return R.fail(ResultConstant.UPDATE_FAIL);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResultBody(false, MessageConstant.UPDATE_FAIL);
+            return R.fail(ResultConstant.UPDATE_FAIL);
         }
-        return new ResultBody(true, MessageConstant.UPDATE_SUCCESS);
+        return R.success(ResultConstant.UPDATE_SUCCESS);
     }
 
     @Override
-    public ResultBody removeSystemPermissionById(Integer id) {
+    public R<String> removeSystemPermissionById(Integer id) {
         List<SystemPermission> systemPermissions = systemPermissionMapper.selectList(null);
         List<Integer> ids = findAllChildrenId(systemPermissions, id);
         ids.add(id);
         if (removeByIds(ids)) {
-            return new ResultBody(true, MessageConstant.REMOVE_SUCCESS);
+            return R.success(ResultConstant.REMOVE_SUCCESS);
         }
-        return new ResultBody(false, MessageConstant.REMOVE_FAIL);
+        return R.fail(ResultConstant.REMOVE_FAIL);
     }
 
     @Override
-    public ResultBody buildUrl() {
+    public R<List<String>> buildUrl() {
         List<String> controllerUrl = ShiroConfig.urlList;
         List<String> urlList = new ArrayList<>(controllerUrl.size());
         try {
@@ -184,10 +178,10 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
             });
         } catch (Exception e) {
             e.printStackTrace();
-            logger.info(e.getMessage(), e);
-            return new ResultBody(false, MessageConstant.EXCEPTION);
+            log.info(e.getMessage(), e);
+            return R.fail(ResultConstant.EXCEPTION);
         }
-        return new ResultBody<>(true, MessageConstant.QUERY_SUCCESS, urlList);
+        return R.success(ResultConstant.QUERY_SUCCESS, urlList);
     }
 
     @Override

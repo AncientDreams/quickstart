@@ -3,7 +3,7 @@ package com.example.quickstart.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.MenuNode;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.entity.SystemPermission;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,10 +44,10 @@ public interface ISystemPermissionService extends IService<SystemPermission> {
      *
      * @param permissionIds 权限列表id数组
      * @param roleId        角色ID
-     * @return ResultBody
+     * @return R
      */
     @Transactional(rollbackFor = Exception.class)
-    ResultBody authorization(List<String> permissionIds, Integer roleId);
+    R<String> authorization(List<String> permissionIds, Integer roleId);
 
     /**
      * 分页查询权限列表
@@ -71,24 +71,24 @@ public interface ISystemPermissionService extends IService<SystemPermission> {
      *
      * @param permission 参数载体
      * @param request    请求对象
-     * @return ResultBody
+     * @return R
      */
-    ResultBody updateSystemPermission(SystemPermission permission, HttpServletRequest request);
+    R<String> updateSystemPermission(SystemPermission permission, HttpServletRequest request);
 
     /**
      * 删除权限信息，递归删除
      *
      * @param id 权限id
-     * @return ResultBody
+     * @return R
      */
-    ResultBody removeSystemPermissionById(Integer id);
+    R<String> removeSystemPermissionById(Integer id);
 
     /**
      * 构建未注册的url，controller中指定了@requestMapper却没有在数据库中保存的Url
      *
-     * @return ResultBody
+     * @return R
      */
-    ResultBody buildUrl();
+    R<List<String>> buildUrl();
 
     /**
      * 查询数据库中所有的权限Url

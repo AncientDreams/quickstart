@@ -3,10 +3,11 @@ package com.example.quickstart.controller.log;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemLog;
 import com.example.quickstart.service.ISystemLogService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,13 +27,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Controller
 @RequestMapping("/systemLog")
+@AllArgsConstructor
 public class SystemLogController {
 
-    private ISystemLogService iSystemLogService;
-
-    public SystemLogController(ISystemLogService iSystemLogService) {
-        this.iSystemLogService = iSystemLogService;
-    }
+    private final ISystemLogService iSystemLogService;
 
     @GetMapping(value = SystemUrlConstant.VIEW)
     public ModelAndView view() {
@@ -47,7 +45,7 @@ public class SystemLogController {
 
     @PostMapping(value = SystemUrlConstant.REMOVE)
     @ResponseBody
-    public ResultBody delete(HttpServletRequest request) {
+    public R<String> delete(HttpServletRequest request) {
         return iSystemLogService.delete(request);
     }
 }

@@ -3,19 +3,24 @@ package com.example.quickstart.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
  * <p>
- *  系统参数
+ * 系统参数
  * </p>
  *
  * @author ZhangXianYu
  * @since 2020-08-03
  */
 @TableName("system_parameter")
+@Data
 public class SystemParameter implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,62 +45,4 @@ public class SystemParameter implements Serializable {
      */
     @TableField("flag")
     private String flag;
-
-    public String getParameterId() {
-        return parameterId;
-    }
-
-    public void setParameterId(String parameterId) {
-        this.parameterId = parameterId;
-    }
-
-    public String getParameterName() {
-        return parameterName;
-    }
-
-    public void setParameterName(String parameterName) {
-        this.parameterName = parameterName;
-    }
-
-    public String getParameterKey() {
-        return parameterKey;
-    }
-
-    public void setParameterKey(String parameterKey) {
-        this.parameterKey = parameterKey;
-    }
-
-    public String getParameterValue() {
-        return parameterValue;
-    }
-
-    public void setParameterValue(String parameterValue) {
-        this.parameterValue = parameterValue;
-    }
-
-    public LocalDateTime getCreationTime() {
-        return creationTime;
-    }
-
-    public void setCreationTime(LocalDateTime creationTime) {
-        this.creationTime = creationTime;
-    }
-
-    public String getFlag() {
-        return flag;
-    }
-
-    public void setFlag(String flag) {
-        this.flag = flag;
-    }
-
-    @Override
-    public String toString() {
-        return "SystemParameter{" +
-                "parameterName='" + parameterName + '\'' +
-                ", parameterKey='" + parameterKey + '\'' +
-                ", parameterValue='" + parameterValue + '\'' +
-                ", creationTime=" + creationTime +
-                '}';
-    }
 }

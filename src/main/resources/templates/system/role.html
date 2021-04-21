@@ -193,7 +193,7 @@
                         type : "post",
                         data: data.field,
                         success : function(res) {
-                            if (res.status) {
+                            if (res.result) {
                                 layer.alert(res.message, {icon: 1
                                     },function () {
                                       layer.closeAll();
@@ -216,7 +216,7 @@
                 //监听修改提交
                 form.on('submit(updateRole)',function(data) {
                     $.post(localUrl + "/role/update",data.field,function (res) {
-                        if (res.status) {
+                        if (res.result) {
                             layer.alert(res.message, {icon: 1
                             },function () {
                                 layer.closeAll();
@@ -258,7 +258,7 @@
                         layer.confirm('确定要删除角色 ' + data.roleName +' 吗？',{icon: 3,title:"删除"}, function(index){
                             //向服务端发送删除指令
                             $.post(localUrl + "/role/remove",data,function (res) {
-                                if (res.status) {
+                                if (res.result) {
                                     obj.del(); //删除对应行（tr）的DOM结构
                                     layer.alert(res.message, {icon: 1
                                     },function () {
@@ -287,14 +287,15 @@
                                 //渲染树形
                                 $.post(localUrl + "/permission/permissionList", {roleNo: data.roleNo},
                                     function (result) {
-                                        treeData = result.list;
-                                        if (result.status){
+                                    console.log(result);
+                                        treeData = result.data;
+                                        if (result.result){
                                             tree.render({
                                                 elem: '#test1'  //绑定元素
                                                 , showCheckbox: true
                                                 , accordion: true
                                                 , showLine: false
-                                                , data: result.list
+                                                , data: result.data
                                                 ,id: 'accreditTree' //定义索引
                                             });
                                         }else{
@@ -327,7 +328,7 @@
                             data: {permissionIds: JSON.stringify(ids),roleId:roleId},
                             dateType:'json',
                             success: function (result) {
-                                if (result.status) {
+                                if (result.result) {
                                     layer.alert(result.message, {icon: 1
                                     },function () {
                                         layer.closeAll();
@@ -340,7 +341,7 @@
                     }
                     ,reload:function () {
                         if (roleId == roleIdCache){
-                            tree.reload('accreditTree', {data:permissionListCache.list});
+                            tree.reload('accreditTree', {data:permissionListCache.data});
                             return;
                         }
                         // 重选
@@ -348,7 +349,7 @@
                             function (result) {
                                 roleIdCache = roleId;
                                 permissionListCache = result;
-                                tree.reload('accreditTree', {data:result.list});
+                                tree.reload('accreditTree', {data:result.data});
                             });
                     }
                 });

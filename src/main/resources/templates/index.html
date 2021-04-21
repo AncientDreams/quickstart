@@ -45,7 +45,6 @@
             }
             // 是否开启刷新记忆tab功能
             var is_remember;
-            console.log(getCookie("is_remember"))
             if (getCookie("is_remember")== 'false'){
                 is_remember = false;
             }
@@ -388,7 +387,7 @@
                     type : "post",
                     data: data.field,
                     success : function(res) {
-                        if (res.status) {
+                        if (res.result) {
                             layer.alert(res.message, {
                                     icon: 1
                                 });
@@ -411,7 +410,7 @@
                 type : "post",
                 data: data.field,
                 success : function(res) {
-                    if (res.status) {
+                    if (res.result) {
                         layer.alert(res.message, {
                             icon: 1
                         },function () {

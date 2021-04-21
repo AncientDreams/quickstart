@@ -102,7 +102,7 @@
                  $("#time").empty();
                  $.post(localUrl + "/log/list",{date:value}, function (res) {
                      $('#time').append(new Option("", "请选择"));
-                     $.each(res.list, function (index, item) {
+                     $.each(res.data, function (index, item) {
                          $('#time').append(new Option(item, item));// 下拉菜单里添加元素
                      });
                      layui.form.render("select");
@@ -116,11 +116,16 @@
                  layer.msg('请选择时段', {icon: 5});
                  return false;
              }
-             var indexs = layer.load(2);
-             $.post(localUrl + "/log/queryLog",data.field, function (res) {
-                 $.each(res.list, function (index, item) {
-                     $('#loggingText').append(item);
-                     layer.close(indexs);
+             $.post(localUrl + "/log/getFileSize", data.field, function (res) {
+                 layer.confirm('当前日志文件大小为：' + res.message + "，您确认要打开查看吗？", {icon: 3, title: '提示'}, function (index) {
+                     layer.close(index);
+                     var indexs = layer.load(2);
+                     $.post(localUrl + "/log/queryLog", data.field, function (res) {
+                         $.each(res.data, function (index, item) {
+                             $('#loggingText').append(item);
+                             layer.close(indexs);
+                         });
+                     });
                  });
              });
              return false;

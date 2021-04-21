@@ -2,7 +2,7 @@ package com.example.quickstart.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.quickstart.bo.PagingTool;
-import com.example.quickstart.bo.ResultBody;
+import com.example.quickstart.bo.R;
 import com.example.quickstart.entity.SystemUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.quickstart.vo.SystemUserAndRoleVo;
@@ -36,7 +36,7 @@ public interface ISystemUserService extends IService<SystemUser> {
      * @param request 请求
      * @return 是否登录成功
      */
-    ResultBody login(HttpServletRequest request);
+    R<String> login(HttpServletRequest request);
 
     /**
      * 分页查询
@@ -51,10 +51,10 @@ public interface ISystemUserService extends IService<SystemUser> {
      * 添加用户
      *
      * @param request 请求信息
-     * @return ResultBody
+     * @return R
      */
     @Transactional(rollbackFor = {Exception.class})
-    ResultBody addUser(HttpServletRequest request);
+    R<String> addUser(HttpServletRequest request);
 
     /**
      * 查询用户和角色一对多关系
@@ -69,27 +69,27 @@ public interface ISystemUserService extends IService<SystemUser> {
      *
      * @param request    请求信息
      * @param systemUser 用户
-     * @return ResultBody
+     * @return R
      */
     @Transactional(rollbackFor = {Exception.class})
-    ResultBody updateUserInfo(HttpServletRequest request, SystemUser systemUser);
+    R<String> updateUserInfo(HttpServletRequest request, SystemUser systemUser);
 
     /**
      * 重置用户密码
      *
      * @param request 请求信息
-     * @return returnResultBody
+     * @return returnR
      */
-    ResultBody resetPassword(HttpServletRequest request);
+    R<String> resetPassword(HttpServletRequest request);
 
     /**
      * 删除用户，真正的删除，可以根据自身需求整改。
      *
      * @param request 请求信息
-     * @return returnResultBody
+     * @return returnR
      */
     @Transactional(rollbackFor = {Exception.class})
-    ResultBody removeUserByUserId(HttpServletRequest request);
+    R<String> removeUserByUserId(HttpServletRequest request);
 
     /**
      * 根据用户名查询用户信息
@@ -103,16 +103,16 @@ public interface ISystemUserService extends IService<SystemUser> {
      * 用户自身修改个人信息
      *
      * @param systemUser systemUser
-     * @return ResultBody
+     * @return R
      */
-    ResultBody updateUserInfoByUser(SystemUser systemUser);
+    R<String> updateUserInfoByUser(SystemUser systemUser);
 
     /**
      * 用户自身修改密码
      *
      * @param request 请求参数
-     * @return ResultBody
+     * @return R
      */
-    ResultBody updatePassWord(HttpServletRequest request);
+    R<String> updatePassWord(HttpServletRequest request);
 
 }

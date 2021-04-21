@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -16,6 +17,7 @@ import java.io.Serializable;
  * @since 2020-07-13
  */
 @TableName("system_role")
+@Data
 public class SystemRole implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -38,36 +40,4 @@ public class SystemRole implements Serializable {
     @TableField("role_describe")
     private String roleDescribe;
 
-    public Integer getRoleNo() {
-        return roleNo;
-    }
-
-    public void setRoleNo(Integer roleNo) {
-        this.roleNo = roleNo;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleDescribe() {
-        return roleDescribe;
-    }
-
-    public void setRoleDescribe(String roleDescribe) {
-        this.roleDescribe = roleDescribe;
-    }
-
-    @Override
-    public String toString() {
-        return "SystemRole{" +
-                "roleNo=" + roleNo +
-                ", roleName='" + roleName + '\'' +
-                ", roleDescribe='" + roleDescribe + '\'' +
-                '}';
-    }
 }

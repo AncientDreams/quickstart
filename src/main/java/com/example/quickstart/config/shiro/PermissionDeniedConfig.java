@@ -1,16 +1,15 @@
 package com.example.quickstart.config.shiro;
 
-import com.example.quickstart.config.system.MyHttpServletRequest;
-import com.example.quickstart.constant.MessageConstant;
+import com.example.quickstart.constant.ResultConstant;
 import com.example.quickstart.constant.SystemUrlConstant;
 import com.example.quickstart.entity.SystemLog;
 import com.example.quickstart.service.ISystemLogService;
 import com.example.quickstart.utils.HttpUtil;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authz.PermissionsAuthorizationFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -35,15 +34,11 @@ import java.util.Map;
  * @author ZhangXianYu   Email: 1600501744@qq.com
  * @since 2020-07-22 16:53
  */
+@Slf4j
+@AllArgsConstructor
 public class PermissionDeniedConfig extends PermissionsAuthorizationFilter {
 
-    private Logger logger = LoggerFactory.getLogger(PermissionDeniedConfig.class);
-
-    private ISystemLogService iSystemLogService;
-
-    PermissionDeniedConfig(ISystemLogService iSystemLogService) {
-        this.iSystemLogService = iSystemLogService;
-    }
+    private final ISystemLogService iSystemLogService;
 
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
@@ -89,13 +84,12 @@ public class PermissionDeniedConfig extends PermissionsAuthorizationFilter {
                 //请求参数
                 systemLog.setRequestParameter(resolveRequestParameter(httpServletRequest));
                 if (!iSystemLogService.save(systemLog)) {
-                    logger.error(MessageConstant.SAVE_FAIL + systemLog.toString());
+                    log.error(ResultConstant.SAVE_FAIL + systemLog.toString());
                 }
             }
         }
 
-        //MyHttpServletRequest 过滤原请求中的非法字符
-        return super.isAccessAllowed(new MyHttpServletRequest((HttpServletRequest) request), response, mappedValue);
+        return super.isAccessAllowed(request, response, mappedValue);
     }
 
 

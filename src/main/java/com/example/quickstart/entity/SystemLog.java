@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -19,6 +20,7 @@ import java.io.Serializable;
  * @since 2020-07-29
  */
 @TableName("system_log")
+@Data
 public class SystemLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -79,99 +81,4 @@ public class SystemLog implements Serializable {
      */
     @TableField("flag")
     private String flag;
-
-    public Integer getLogId() {
-        return logId;
-    }
-
-    public void setLogId(Integer logId) {
-        this.logId = logId;
-    }
-
-    public String getRequestIp() {
-        return requestIp;
-    }
-
-    public void setRequestIp(String requestIp) {
-        this.requestIp = requestIp;
-    }
-
-    public String getServerIp() {
-        return serverIp;
-    }
-
-    public void setServerIp(String serverIp) {
-        this.serverIp = serverIp;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getRequestType() {
-        return requestType;
-    }
-
-    public void setRequestType(String requestType) {
-        this.requestType = requestType;
-    }
-
-    public boolean isAjax() {
-        return isAjax;
-    }
-
-    public void setAjax(boolean ajax) {
-        isAjax = ajax;
-    }
-
-    public LocalDateTime getRequestTime() {
-        return requestTime;
-    }
-
-    public void setRequestTime(LocalDateTime requestTime) {
-        this.requestTime = requestTime;
-    }
-
-    public String getRequestBy() {
-        return requestBy;
-    }
-
-    public void setRequestBy(String requestBy) {
-        this.requestBy = requestBy;
-    }
-
-    public String getRequestParameter() {
-        return requestParameter;
-    }
-
-    public void setRequestParameter(String requestParameter) {
-        this.requestParameter = requestParameter;
-    }
-
-    public String getFlag() {
-        return flag;
-    }
-
-    public void setFlag(String flag) {
-        this.flag = flag;
-    }
-
-    @Override
-    public String toString() {
-        return "SystemLog{" +
-                "logId=" + logId +
-                ", requestIp='" + requestIp + '\'' +
-                ", serverIp='" + serverIp + '\'' +
-                ", url='" + url + '\'' +
-                ", requestType='" + requestType + '\'' +
-                ", isAjax=" + isAjax +
-                ", requestTime=" + requestTime +
-                ", requestBy='" + requestBy + '\'' +
-                ", requestParameter='" + requestParameter + '\'' +
-                '}';
-    }
 }
