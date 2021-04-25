@@ -236,3 +236,20 @@ INSERT INTO `system_user_role` VALUES ('97', '9', '1');
 INSERT INTO `system_user_role` VALUES ('142', '1', '1');
 INSERT INTO `system_user_role` VALUES ('147', '15', '40');
 INSERT INTO `system_user_role` VALUES ('148', '14', '40');
+
+
+-- ----------------------------
+-- Table structure for ec_ip_white_list
+-- ----------------------------
+DROP TABLE IF EXISTS `ec_ip_white_list`;
+CREATE TABLE `ec_ip_white_list`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公司名称',
+  `ip` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `create_time` datetime(0) NOT NULL COMMENT '创建时间',
+  `create_by` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '创建人',
+  `modify_date_time` datetime(0) NULL DEFAULT NULL COMMENT '上次修改时间',
+  `modify_by` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '上次修改人',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;

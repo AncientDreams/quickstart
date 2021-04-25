@@ -64,3 +64,7 @@ spring:
       filters: stat,wall,slf4j
       # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+# 定时器 ErrorLogTask 是否启动，true表示启动，其他表示不启动
+filter:
+  ErrorLogTaskFilter: true

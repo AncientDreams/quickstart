@@ -356,7 +356,7 @@
                   $("#addUrl").empty();
                   $('#addUrl').append(new Option("", ""));
                   $.post(localUrl + "/permission/buildUrl", function (res) {
-                      $.each(res.list, function (index, item) {
+                      $.each(res.data, function (index, item) {
                           $('#addUrl').append(new Option(item, item));// 下拉菜单里添加元素
                       });
                       layui.form.render("select");
@@ -409,7 +409,7 @@
                   $("#updateUrl").empty();
                   $('#updateUrl').append(new Option(data.url, data.url));
                   $.post(localUrl + "/permission/buildUrl", function (res) {
-                      $.each(res.list, function (index, item) {
+                      $.each(res.data, function (index, item) {
                           $('#updateUrl').append(new Option(item, item));// 下拉菜单里添加元素
                       });
 

@@ -118,15 +118,7 @@
 <!-- 授权-->
     <div class="layui-fluid" id="tree" style="display: none">
             <div id="test1" class="demo-tree"></div><br><br>
-            <div class="layui-form-item">
-                <button class="layui-btn"  lay-demo="accredit">授权</button>
-                <button class="layui-btn"  lay-demo="checkAll">全选</button>
-                <button class="layui-btn"  lay-demo="reload">重选</button>
-            </div>
     </div>
-
-
-
 
     </body>
     <script>
@@ -240,6 +232,7 @@
                  * @type {Array}
                  */
                 var ids = [];
+                var permissionListCache,roleIdCache;
                 //监听行工具事件
                 table.on('tool(dataTable)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
                     var data = obj.data //获得当前行数据
@@ -280,6 +273,7 @@
                             maxmin: true,
                             shadeClose: true,
                             shade:0.4,
+                            btn: ['授权', '全选','重选','折叠','展开'],
                             title: "正在为角色【" + data.roleName + "】授权",
                             content: $("#tree"),
                             success: function () {
@@ -303,57 +297,77 @@
                                         }
                                     });
                             }
+                            , yes: function (index, layero) {
+                                //授权
+                                //授权后改变 roleIdCache 缓存值，然它自动去更新缓存
+                                roleIdCache = null;
+                                //授权
+                                ids = [];
+                                var checkData = tree.getChecked('accreditTree');
+                                treeCheckId(checkData);
+                                $.ajax({
+                                    type: 'post',
+                                    url: localUrl + "/permission/authorization",
+                                    data: {permissionIds: JSON.stringify(ids),roleId:roleId},
+                                    dateType:'json',
+                                    success: function (result) {
+                                        if (result.result) {
+                                            layer.alert(result.message, {icon: 1
+                                            },function () {
+                                                layer.closeAll();
+                                            });
+                                        }else{
+                                            layer.alert(result.message, {icon: 2});
+                                        }
+                                    }
+                                })
+                               return false;
+                            }
+                            , btn2: function (index, layero) {
+                                //全选
+                                allSelect(treeData);
+                                tree.reload('accreditTree', {data:treeData});
+                                return false;
+                            }
+                            , btn3: function (index, layero) {
+                                if (roleId == roleIdCache){
+                                    tree.reload('accreditTree', {data:permissionListCache.data});
+                                    return false;
+                                }
+                                // 重选
+                                $.post(localUrl + "/permission/permissionList", {roleNo: roleId},
+                                    function (result) {
+                                        roleIdCache = roleId;
+                                        permissionListCache = result;
+                                        tree.reload('accreditTree', {data:result.data});
+                                    });
+                                return false;
+                            }
+                            , btn4:function (index,layero){
+                                //折叠
+                                $.post(localUrl + "/permission/permissionList", {roleNo: roleId},
+                                    function (result) {
+                                        for (let i = 0; i < result.data.length; i++) {
+                                            result.data[i].spread = false;
+                                        }
+                                        tree.reload('accreditTree', {data:result.data});
+                                    });
+                                return false;
+                            }
+                            , btn5:function (index,layero){
+                                //展开
+                                $.post(localUrl + "/permission/permissionList", {roleNo: roleId},
+                                    function (result) {
+                                        for (let i = 0; i < result.data.length; i++) {
+                                            result.data[i].spread = true;
+                                        }
+                                        tree.reload('accreditTree', {data:result.data});
+                                    });
+                                return false;
+                            }
                         });
                     }
                 });
-
-
-                var permissionListCache,roleIdCache;
-                //按钮事件
-                util.event('lay-demo', {
-                    checkAll: function(){
-                        allSelect(treeData);
-                        tree.reload('accreditTree', {data:treeData});
-                    }
-                    ,accredit: function(){
-                        //授权后改变 roleIdCache 缓存值，然它自动去更新缓存
-                        roleIdCache = null;
-                        //授权
-                        ids = [];
-                        var checkData = tree.getChecked('accreditTree');
-                        treeCheckId(checkData);
-                        $.ajax({
-                            type: 'post',
-                            url: localUrl + "/permission/authorization",
-                            data: {permissionIds: JSON.stringify(ids),roleId:roleId},
-                            dateType:'json',
-                            success: function (result) {
-                                if (result.result) {
-                                    layer.alert(result.message, {icon: 1
-                                    },function () {
-                                        layer.closeAll();
-                                    });
-                                }else{
-                                    layer.alert(result.message, {icon: 2});
-                                }
-                            }
-                        })
-                    }
-                    ,reload:function () {
-                        if (roleId == roleIdCache){
-                            tree.reload('accreditTree', {data:permissionListCache.data});
-                            return;
-                        }
-                        // 重选
-                        $.post(localUrl + "/permission/permissionList", {roleNo: roleId},
-                            function (result) {
-                                roleIdCache = roleId;
-                                permissionListCache = result;
-                                tree.reload('accreditTree', {data:result.data});
-                            });
-                    }
-                });
-
                 // 全选全选
                 function allSelect(database) {
                     $.each(database, function (index, item) {

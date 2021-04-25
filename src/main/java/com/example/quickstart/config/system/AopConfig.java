@@ -8,8 +8,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -41,10 +39,8 @@ public class AopConfig {
     public Object around(ProceedingJoinPoint proceedingJoinPoint, MethodRunLog methodRunLog) {
         Object obj = null;
         try {
-            Class<?> pointClass = proceedingJoinPoint.getTarget().getClass();
             MethodSignature signature = (MethodSignature) proceedingJoinPoint.getSignature();
-            Method method = pointClass.getDeclaredMethod(signature.getName(),
-                    signature.getMethod().getParameterTypes());
+            Method method = signature.getMethod();
             //方法名称
             String methodName = "执行方法名称：" + method.getName()
                     + (StringUtils.isEmpty(methodRunLog.methodName()) ? "，" : "(" + methodRunLog.methodName() + ")，");
