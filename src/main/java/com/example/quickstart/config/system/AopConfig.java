@@ -88,6 +88,9 @@ public class AopConfig {
     public Object around1(ProceedingJoinPoint proceedingJoinPoint, EnableCache enableCache) {
         Object obj = null;
         try {
+            if (!StringUtils.isEmpty(enableCache.updateCache())) {
+                cacheMap.remove(enableCache.updateCache());
+            }
             Class<?> pointClass = proceedingJoinPoint.getTarget().getClass();
             MethodSignature signature = (MethodSignature) proceedingJoinPoint.getSignature();
             //全类名加方法名称做key
@@ -95,7 +98,7 @@ public class AopConfig {
             //注解设置的过期时间
             long expirationTime = enableCache.expirationTime();
             if (expirationTime < 0) {
-                log.error("开始缓存失败，缓存过期时间不能小于0，位置：{}", caCheKey);
+                //负数 不开启缓存
                 return proceedingJoinPoint.proceed();
             } else if (expirationTime == 0) {
                 //缓存永久有效

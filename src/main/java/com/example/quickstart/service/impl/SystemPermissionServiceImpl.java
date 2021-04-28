@@ -3,6 +3,7 @@ package com.example.quickstart.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.quickstart.annotation.EnableCache;
 import com.example.quickstart.bo.MenuNode;
 import com.example.quickstart.bo.PagingTool;
 import com.example.quickstart.bo.R;
@@ -52,6 +53,7 @@ public class SystemPermissionServiceImpl extends ServiceImpl<SystemPermissionMap
     }
 
     @Override
+    @EnableCache(expirationTime = -1,updateCache = "com.example.quickstart.service.impl.SystemUserServiceImpl.getAuthorizationInfo")
     public R<String> authorization(List<String> permissionIds, Integer roleId) {
         try {
             //获取角色的所有拥有权限id

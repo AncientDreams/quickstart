@@ -6,6 +6,7 @@ import com.example.quickstart.bo.R;
 import com.example.quickstart.entity.SystemUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.quickstart.vo.SystemUserAndRoleVo;
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -114,5 +115,13 @@ public interface ISystemUserService extends IService<SystemUser> {
      * @return R
      */
     R<String> updatePassWord(HttpServletRequest request);
+
+    /**
+     * 获取AuthorizationInfo 注入到shiro中
+     *
+     * @param userName 用户名
+     * @return AuthorizationInfo
+     */
+    AuthorizationInfo getAuthorizationInfo(String userName);
 
 }

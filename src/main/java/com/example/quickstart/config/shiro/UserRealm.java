@@ -2,23 +2,16 @@ package com.example.quickstart.config.shiro;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.quickstart.constant.ResultConstant;
-import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.entity.SystemUser;
-import com.example.quickstart.entity.SystemUserRole;
-import com.example.quickstart.service.ISystemPermissionService;
-import com.example.quickstart.service.ISystemUserRoleService;
 import com.example.quickstart.service.ISystemUserService;
 import lombok.AllArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import java.util.List;
 
 /**
  * <p>
@@ -34,38 +27,10 @@ public class UserRealm extends AuthorizingRealm {
 
     private final ISystemUserService iSystemUserService;
 
-    private final ISystemUserRoleService iSystemUserRoleService;
-
-    private final ISystemPermissionService iSystemPermissionService;
-
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         String username = (String) SecurityUtils.getSubject().getPrincipal();
-        SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
-
-        LambdaQueryWrapper<SystemUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SystemUser::getUserName, username).eq(SystemUser::getStatus,"0");
-        SystemUser systemUser = iSystemUserService.getOne(lambdaQueryWrapper);
-
-        //用户角色
-        List<SystemUserRole> systemUserRoles = iSystemUserRoleService.
-                list(new LambdaQueryWrapper<SystemUserRole>().eq(SystemUserRole::getUserId, systemUser.getUserId()));
-
-        for (SystemUserRole userRole : systemUserRoles) {
-            //添加角色
-            simpleAuthorizationInfo.addRole(String.valueOf(userRole.getRoleId()));
-            //角色的权限
-            List<SystemPermission> systemPermissionList = iSystemPermissionService
-                    .findByUerName(systemUser.getUserName(), null);
-            systemPermissionList.forEach(systemPermission -> {
-                String url = systemPermission.getUrl();
-                if (!StringUtils.isEmpty(url)) {
-                    //添加权限（URL）
-                    simpleAuthorizationInfo.addStringPermission(systemPermission.getUrl().trim());
-                }
-            });
-        }
-        return simpleAuthorizationInfo;
+        return iSystemUserService.getAuthorizationInfo(username);
     }
 
     @Override

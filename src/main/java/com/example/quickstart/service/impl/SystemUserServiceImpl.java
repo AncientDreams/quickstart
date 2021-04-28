@@ -4,13 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.example.quickstart.annotation.EnableCache;
 import com.example.quickstart.annotation.MethodRunLog;
 import com.example.quickstart.bo.PagingTool;
 import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.ResultConstant;
+import com.example.quickstart.entity.SystemPermission;
 import com.example.quickstart.entity.SystemUser;
 import com.example.quickstart.entity.SystemUserRole;
 import com.example.quickstart.mapper.SystemUserMapper;
+import com.example.quickstart.service.ISystemPermissionService;
 import com.example.quickstart.service.ISystemUserRoleService;
 import com.example.quickstart.service.ISystemUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -48,6 +53,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     private final SystemUserMapper systemUserMapper;
 
     private final ISystemUserRoleService iSystemUserRoleService;
+
+    private final ISystemPermissionService iSystemPermissionService;
 
     @Override
     public boolean checkPassword(String systemPassword, String password, String salt) {
@@ -164,6 +171,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     }
 
     @Override
+    @EnableCache(expirationTime = -1,updateCache = "com.example.quickstart.service.impl.SystemUserServiceImpl.getAuthorizationInfo")
     public R<String> updateUserInfo(HttpServletRequest request, SystemUser systemUser) {
         //判断状态
         String status = "on";
@@ -313,6 +321,35 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
             return R.fail(ResultConstant.UPDATE_FAIL);
         }
         return R.success(ResultConstant.UPDATE_SUCCESS);
+    }
+
+    @Override
+    @EnableCache
+    public AuthorizationInfo getAuthorizationInfo(String userName) {
+        SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
+        LambdaQueryWrapper<SystemUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SystemUser::getUserName, userName).eq(SystemUser::getStatus,"0");
+        SystemUser systemUser = getOne(lambdaQueryWrapper);
+
+        //用户角色
+        List<SystemUserRole> systemUserRoles = iSystemUserRoleService.
+                list(new LambdaQueryWrapper<SystemUserRole>().eq(SystemUserRole::getUserId, systemUser.getUserId()));
+
+        for (SystemUserRole userRole : systemUserRoles) {
+            //添加角色
+            simpleAuthorizationInfo.addRole(String.valueOf(userRole.getRoleId()));
+            //角色的权限
+            List<SystemPermission> systemPermissionList = iSystemPermissionService
+                    .findByUerName(systemUser.getUserName(), null);
+            systemPermissionList.forEach(systemPermission -> {
+                String url = systemPermission.getUrl();
+                if (!StringUtils.isEmpty(url)) {
+                    //添加权限（URL）
+                    simpleAuthorizationInfo.addStringPermission(systemPermission.getUrl().trim());
+                }
+            });
+        }
+        return simpleAuthorizationInfo;
     }
 
     private List<SystemUserRole> buildSystemUserRoles(HttpServletRequest request, Integer uid) {

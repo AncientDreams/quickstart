@@ -19,11 +19,16 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface EnableCache {
 
+    /**
+     * 缓存过期时间，过期后将自动更新缓存，单位毫秒，为0时表示缓存永久有效，为负数时表示不开启缓存，只是
+     * 用户更新缓存
+     */
+    long expirationTime() default 0;
 
     /**
-     * 缓存过期时间，过期后将自动更新缓存，单位毫秒，为0时表示缓存永久有效
+     * 更新缓存，如果需要手动更新缓存，在触发更新的方法在加上注解，然后此参数填写要更新的缓存key，
+     * 下次请求的时候会重新加载新的内容到缓存中
      */
-    long expirationTime();
-
+    String updateCache() default "";
 
 }
