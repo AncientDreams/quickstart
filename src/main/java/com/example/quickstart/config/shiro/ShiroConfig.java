@@ -121,31 +121,39 @@ public class ShiroConfig {
         controllerClass.forEach(className -> {
             try {
                 Class<?> z = Class.forName(className);
-                if (z.isAnnotationPresent(RequestMapping.class) && !z.isAnnotationPresent(AllowAccess.class)) {
-                    RequestMapping requestMapping = z.getAnnotation(RequestMapping.class);
-                    String headUrl = restUrl(requestMapping.value()[0]);
-                    Method[] methods = arrayReverse(z.getDeclaredMethods());
-                    String url;
-                    for (Method method : methods) {
-                        try {
-                            if (method.isAnnotationPresent(AllowAccess.class)) {
+                //判断类是否是控制器，并且未被 AllowAccess注解放行
+                if (z.isAnnotationPresent(Controller.class) || z.isAnnotationPresent(RestController.class)) {
+                    if (!z.isAnnotationPresent(AllowAccess.class)) {
+                        String headUrl = "";
+                        //获取方法头的url
+                        if (z.isAnnotationPresent(RequestMapping.class)) {
+                            RequestMapping requestMapping = z.getAnnotation(RequestMapping.class);
+                            headUrl = restUrl(requestMapping.value()[0]);
+                        }
+                        Method[] methods = arrayReverse(z.getDeclaredMethods());
+                        String url;
+                        for (Method method : methods) {
+                            try {
+                                if (method.isAnnotationPresent(AllowAccess.class)) {
+                                    continue;
+                                }
+                            } catch (Exception e) {
+                                log.error("注解@AutoRegisterUrl  priority() 属性，请保证排序顺序 如 1，2，3，4，5", e);
+                                break;
+                            }
+                            url = getMethodUrl(method);
+                            //检查权限是否已经被注册过，跳过自动注册
+                            if (!dataUrlList.contains(restUrl(headUrl + url))) {
+                                autoRegisterUrl(method, restUrl(headUrl + url));
+                            }
+                            //检查URL是否已经填充
+                            if (StringUtils.isEmpty(url) || filterChainDefinitionMap.containsKey(headUrl.concat(url))) {
                                 continue;
                             }
-                        } catch (Exception e) {
-                            log.error("注解@AutoRegisterUrl  priority() 属性，请保证排序顺序 如 1，2，3，4，5", e);
-                            break;
+                            url = restUrl(headUrl.concat(url));
+                            filterChainDefinitionMap.put(url, ShiroConstant.PERMS + "[" + url + "]");
+                            urlList.add(url);
                         }
-                        url = getMethodUrl(method);
-                        //检查权限是否已经被注册过，跳过自动注册
-                        if (!dataUrlList.contains(restUrl(headUrl + url))) {
-                            autoRegisterUrl(method, restUrl(headUrl + url));
-                        }
-                        if (StringUtils.isEmpty(url)) {
-                            continue;
-                        }
-                        url = restUrl(headUrl.concat(url));
-                        filterChainDefinitionMap.put(url, ShiroConstant.PERMS + "[" + url + "]");
-                        urlList.add(url);
                     }
                 }
             } catch (ClassNotFoundException e) {

@@ -34,11 +34,6 @@ public class RoleController {
         return new ModelAndView("system/role");
     }
 
-    @GetMapping(value = "/addRolePage")
-    public ModelAndView addRolePage() {
-        return new ModelAndView("system/role-add");
-    }
-
     @RequestMapping(SystemUrlConstant.LIST)
     public R<List<SystemRole>> list() {
         return R.success(ResultConstant.QUERY_SUCCESS, iSystemRoleService.list());

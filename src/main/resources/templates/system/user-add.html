@@ -110,8 +110,8 @@
                 //初始化权限按钮
                 $.post(localUrl + "/role/list", function (result) {
                     var chebox = "";
-                    $.each(result.list, function(index, val) {
-                        if(index%3 == 0){
+                    $.each(result.data, function(index, val) {
+                        if(index%3 == 0 && index != 0){
                             chebox+= "<br/>"
                         }
                         chebox += "<input type=\"checkbox\"  name='"+val.roleNo+"' lay-skin=\"primary\" title='"+val.roleName+"' >";

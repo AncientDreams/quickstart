@@ -1,6 +1,7 @@
 package com.example.quickstart.controller.system;
 
 
+import com.example.quickstart.annotation.AllowAccess;
 import com.example.quickstart.bo.MenuNode;
 import com.example.quickstart.bo.R;
 import com.example.quickstart.constant.SystemUrlConstant;
@@ -32,6 +33,7 @@ import java.util.UUID;
  */
 @Controller
 @AllArgsConstructor
+@AllowAccess
 public class SystemController {
 
     private final ISystemPermissionService iSystemPermissionService;
